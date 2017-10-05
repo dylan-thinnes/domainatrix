@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>EdAcUk Domain Hell</title>
+		<style>
+			body {
+				margin-right: auto;
+				margin-left: auto;
+				max-width: 700px;
+				background-color: #f8f8f8;
+				color: #111111;
+				font-size: 16px;
+				display: flex;
+				flex-direction: column;
+				font-family: monospace;
+				/*line-height: 1.2em;*/
+			}
+			.divider {
+				width: 100%;
+				margin-top: 0.4em;
+				border-bottom: 1px solid #111111;
+				margin-bottom: 0.4em;
+			}
+			.centerText {
+				width: 100%;
+				text-align: center;
+			}
+
+			.labeledInput {
+				width: 100%;
+				display: flex;
+				flex-direction: row;
+			}
+			.labeledInput > div:first-child {
+				flex: 0 0 auto;
+				margin-right: 1ch;
+			}
+			.labeledInput > div:last-child {
+				border-bottom: 1px solid #999999;
+				outline: none;
+				flex: 1 1 auto;
+			}
+			.labeledInput > div:last-child:focus {
+				border-bottom: 1px solid #111111;
+			}
+			#searchDomains {
+				padding-top: 0.4em;
+			}
+
+			.domainListItem {
+				text-align: right;
+				padding-top: 0.4em;
+			}
+			.domainPrefix {
+				color: maroon;
+				font-weight: bolder;
+			}
+			.domainSuffix {
+				color: #111111;
+				font-weight: bold;
+			}
+		</style>
+
+	</head>
+	<body>
+		<span class="centerText" style="font-size: 20px;">Welcome to the Edinburgh Domainatrix.<!--8th Level of Hell--></span>
+		<div class="divider"></div>
+		<span>- Ever wondered about all those convoluted University of Edinburgh subdomains?<br/>
+		- Found a particularly saucy one you'd like to share?<br/>
+		- Just looking for an excuse to drink your sorrows away into an inky blackness of expired and illegitimate certificates that plague you like the frogs did Egypt in that one fairy tale?<br/></span>
+		<div class="divider"></div>
+		<span class="centerText"><b>You've come to the right place!</b></span>
+		<div class="divider"></div>
+		<div id="addDomain" class="labeledInput"><div id="addDomainPrompt">Add A New Domain:</div><div id="addDomainInput" contenteditable></div></div>
+		<div id="addDomainStatus"></div>
+		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Search Domains (so far):</div><div id="searchDomainInput" contenteditable></div></div>
+		<div id="domainList"></div>
+
+		<script>
+			var DomainListItem = function (domain) {
+				this.domain = domain;
+				var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
+				this.hidden = false;
+				if (match === null) {
+					this.hide();
+					this.show = this.hide;
+				} else {
+					this.subdomain = match[1];
+					this.node = document.createElement("div");
+					var prefix = document.createElement("span");
+					prefix.className = "domainPrefix"
+					prefix.appendChild(document.createTextNode(this.subdomain));
+					var suffix = document.createElement("span");
+					suffix.className = "domainSuffix"
+					suffix.appendChild(document.createTextNode("ed.ac.uk"));
+					this.node.className = "domainListItem";
+					this.node.appendChild(prefix);
+					this.node.appendChild(suffix);
+				}
+			}
+			DomainListItem.prototype.hide = function () {
+				this.node.style.display = "none";
+				this.hidden = true;
+			}
+			DomainListItem.prototype.show = function () {
+				this.node.style.display = "";
+				this.hidden = false;
+			}
+			DomainListItem.prototype.toggle = function () {
+				if (this.hidden) this.show();
+				else this.hide();
+			}
+			var DomainList = function (id, searchId) {
+				this.node = document.getElementById(id);
+				this.searchNode = document.getElementById(searchId); 
+				this.searchNode.addEventListener("input", this.searchDomainItems.bind(this));
+				this.domains = {};
+			}
+			Object.defineProperty(DomainList.prototype, "search", {
+				"get": function () {
+					return this.searchNode.innerHTML;
+				},
+				"set": function (newSearch) {
+					this.searchNode.innerHTML = newSearch;
+				}
+			});
+			DomainList.prototype.addDomainItem = function (domain) {
+				this.domains[domain] = new DomainListItem(domain);
+				this.node.appendChild(this.domains[domain].node);
+			}
+			DomainList.prototype.searchDomainItems = function (e) {
+				console.log(e, this.search, new RegExp(this.search));
+				if (this.search === "") {
+					for (var domain in this.domains) {
+						this.domains[domain].show();
+					}
+				} else {
+					for (var domain in this.domains) {
+						console.log(domain);
+						if (domain.match(new RegExp(this.search)) !== null) this.domains[domain].show();
+						else this.domains[domain].hide();
+					}
+				}
+			}
+			var list = new DomainList("domainList", "searchDomainInput");
+		</script>
+	</body>
+</html>
