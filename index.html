@@ -4,9 +4,11 @@
 		<title>EdAcUk Domain Hell</title>
 		<style>
 			body {
-				margin-right: auto;
-				margin-left: auto;
+				margin: 0 auto 0 auto;
+				padding: 5px 0 5px 0;
+				box-sizing: border-box;
 				max-width: 700px;
+				height: 100vh;
 				background-color: #f8f8f8;
 				color: #111111;
 				font-size: 16px;
@@ -14,6 +16,9 @@
 				flex-direction: column;
 				font-family: monospace;
 				/*line-height: 1.2em;*/
+			}
+			body > * {
+				flex: 0 0 auto;
 			}
 			.divider {
 				width: 100%;
@@ -24,6 +29,9 @@
 			.centerText {
 				width: 100%;
 				text-align: center;
+			}
+			.paddedText {
+				margin-top: 0.4em;
 			}
 
 			.labeledInput {
@@ -45,6 +53,15 @@
 			}
 			#searchDomains {
 				padding-top: 0.4em;
+			}
+			#serverFeedback {
+				padding-left: 21ch;
+			}
+
+			#domainList {
+				flex: 1 1 auto;
+				overflow-y: scroll;
+				padding-right: 2ch;
 			}
 
 			.domainListItem {
@@ -68,13 +85,13 @@
 		<span>- Ever wondered about all those convoluted University of Edinburgh subdomains?<br/>
 		- Found a particularly saucy one you'd like to share?<br/>
 		- Just looking for an excuse to drink your sorrows away into an inky blackness of expired and illegitimate certificates that plague you like the frogs did Egypt in that one fairy tale?<br/></span>
+		<span class="centerText paddedText"><b>You've come to the right place!</b></span>
 		<div class="divider"></div>
-		<span class="centerText"><b>You've come to the right place!</b></span>
-		<div class="divider"></div>
-		<div id="addDomain" class="labeledInput"><div id="addDomainPrompt">Add A New Domain:</div><div id="addDomainInput" contenteditable></div></div>
-		<div id="addDomainStatus"></div>
-		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Search Domains (so far):</div><div id="searchDomainInput" contenteditable></div></div>
+		<span class="centerText" style="font-size: 18px;">The Domain List (So Far)</span>
+		<div id="addDomain" class="paddedText labeledInput"><div id="addDomainPrompt">Submit A New Domain:</div><div id="addDomainInput" contenteditable spellcheck="false"></div></div>
+		<span class="paddedText" id="serverFeedback"></span>
 		<div id="domainList"></div>
+		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Filter Domains (RegExp):</div><div id="searchDomainInput" contenteditable spellcheck="false"></div></div>
 
 		<script>
 			var DomainListItem = function (domain) {
@@ -110,11 +127,30 @@
 				if (this.hidden) this.show();
 				else this.hide();
 			}
-			var DomainList = function (id, searchId) {
+			var DomainList = function (id, searchId, submitId, feedbackId) {
 				this.node = document.getElementById(id);
 				this.searchNode = document.getElementById(searchId); 
 				this.searchNode.addEventListener("input", this.searchDomainItems.bind(this));
-				this.domains = {};
+				this.entries = {};
+				this.inputNode = document.getElementById(submitId);
+				this.inputNode.addEventListener("keydown", this.handleInputKeys.bind(this));
+				this.feedback = {
+					div: document.getElementById(feedbackId),
+					setState: function (state) {
+						//console.log(state);
+						/*
+						state 0: The domain is legitimate.
+						state 1: The domain is already in the remote list.
+						state 2: The domain has no dns lookup.
+						state 3: The domain does not meet the regular expression standard.
+						*/
+						if (state === 0) this.div.innerHTML = "Domain legitimate. Added.";
+						else if (state === 1) this.div.innerHTML = "Domain is already in the list.";
+						else if (state === 2) this.div.innerHTML = "Domain does not resolve through DNS.";
+						else if (state === 3) this.div.innerHTML = "Domain is not a subdomain of ed.ac.uk.";
+					}
+				}
+				this.getRemoteDomains();
 			}
 			Object.defineProperty(DomainList.prototype, "search", {
 				"get": function () {
@@ -124,25 +160,79 @@
 					this.searchNode.innerHTML = newSearch;
 				}
 			});
+			DomainList.prototype.handleInputKeys = function (e) {
+				if (e.keyCode === 13) {
+					//console.log("domains being sent");
+					event.preventDefault();
+					this.askDomain(this.inputNode.innerHTML);
+				}
+			}
 			DomainList.prototype.addDomainItem = function (domain) {
-				this.domains[domain] = new DomainListItem(domain);
-				this.node.appendChild(this.domains[domain].node);
+				if (this.entries[domain] === undefined) {
+					this.entries[domain] = new DomainListItem(domain);
+					this.node.appendChild(this.entries[domain].node);
+				}
+			}
+			DomainList.prototype.askDomain = function (domain) {
+				var req = new XMLHttpRequest();
+				req.open("GET", "/add?domain="+domain);
+				req.onreadystatechange = (function (req) {
+					if (req.readyState === 4) {
+						this.serverResponseControl(req.response);
+					}
+				}).bind(this, req);
+				req.send();
+			}
+			DomainList.prototype.getRemoteDomains = function () {
+				var req = new XMLHttpRequest();
+				req.open("GET", "/data");
+				req.onreadystatechange = (function (req) {
+					if (req.readyState === 4) {
+						//console.log(req.response);
+						this.setRemoteDomains(req.response);
+					}
+				}).bind(this, req);
+				req.send();
+			}
+			DomainList.prototype.setRemoteDomains = function (res) {
+				try {
+					var resJson = JSON.parse(res);
+					for (var ii = 0; ii  < resJson.length; ii++) {
+						this.addDomainItem(resJson[ii]);
+					}
+				} catch (e) {
+					console.log(e, "Illegitimate output from server on /data endpoint.");
+				}
+			}
+			DomainList.prototype.serverResponseControl = function (res) {
+				try {
+					var resJson = JSON.parse(res);
+					this.feedback.setState(resJson.state);
+					if (resJson.state === 0) {
+						//console.log("Domain was accepted.");
+						this.addDomainItem(resJson.domain);
+					} else {
+						//console.log("Domain was not accepted.");
+					}
+				} catch (e) {
+					//console.log(e, "Illegitimate output from server on /add endpoint.");
+				}
 			}
 			DomainList.prototype.searchDomainItems = function (e) {
-				console.log(e, this.search, new RegExp(this.search));
+				//console.log(e, this.search, new RegExp(this.search));
 				if (this.search === "") {
-					for (var domain in this.domains) {
-						this.domains[domain].show();
+					for (var domain in this.entries) {
+						this.entries[domain].show();
 					}
 				} else {
-					for (var domain in this.domains) {
-						console.log(domain);
-						if (domain.match(new RegExp(this.search)) !== null) this.domains[domain].show();
-						else this.domains[domain].hide();
+					for (var domain in this.entries) {
+						//console.log(domain);
+						if (this.entries[domain].domain.match(new RegExp(this.search)) !== null) this.entries[domain].show();
+						else this.entries[domain].hide();
 					}
 				}
 			}
-			var list = new DomainList("domainList", "searchDomainInput");
+			var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback");
 		</script>
 	</body>
 </html>
