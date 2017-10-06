@@ -42,7 +42,7 @@ DomainData.prototype.setFile = function (err, fd) {
 	this.stateControl("file");
 }
 DomainData.prototype.addDomainCandidate = function (domain, callback) {
-	console.log(this.domains, domain);
+	//console.log(this.domains, domain);
 	var parsedDomain = domain.match(/([^\s]+\.|)ed\.ac\.uk$/g);
 	if (parsedDomain !== null) {
 		if (this.domains.indexOf(domain) !== -1) callback(JSON.stringify({"state": 1}));
@@ -78,9 +78,10 @@ var domData = new DomainData("domains.txt", function () {
 		} else if (parsedUrl.pathname === "/data" || parsedUrl.pathname === "/data/index.html") {
 			res.end(domData.getDomains());
 		} else {
+			res.writeHead(404);
 			res.end();
 		}
 	});
 	server.listen(8080);
-	console.log(this.getDomains());
+	//console.log(this.getDomains());
 });
