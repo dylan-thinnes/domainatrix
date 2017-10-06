@@ -74,11 +74,11 @@
 				padding-top: 0.4em;
 			}
 			.domainPrefix {
-				color: maroon;
+				color: #111111;
 				font-weight: bolder;
 			}
 			.domainSuffix {
-				color: #111111;
+				color: #999999;
 				font-weight: bold;
 			}
 
@@ -163,6 +163,20 @@
 				this.inputNode.addEventListener("keydown", this.handleInputKeys.bind(this));
 				this.feedback = {
 					node: document.getElementById(feedbackId),
+					stateTexts: {
+						"-1": "Querying server...",
+						"0":  "Domain legitimate. Added.",
+						"1":  "Domain is already in the list.",
+						"2":  "Domain has no DNS entry.",
+						"3":  "Domain is not a subdomain of ed.ac.uk."
+					},
+					stateColours: {
+						"-1": "#CDDC39",
+						"0":  "#4CAf50",
+						"1":  "#03A9F4",
+						"2":  "#FF5722",
+						"3":  "#FF5722"
+					},
 					setState: function (state) {
 						//console.log(state);
 						/*
@@ -171,10 +185,13 @@
 						state 2: The domain has no dns lookup.
 						state 3: The domain does not meet the regular expression standard.
 						*/
-						if (state === 0) this.node.innerHTML = "Domain legitimate. Added.";
+						/*if (state === -1) this.node.innerHTML = "...";
+						else if (state === 0) this.node.innerHTML = "Domain legitimate. Added.";
 						else if (state === 1) this.node.innerHTML = "Domain is already in the list.";
 						else if (state === 2) this.node.innerHTML = "Domain's DNS lookup can't be resolved.";
-						else if (state === 3) this.node.innerHTML = "Domain is not a subdomain of ed.ac.uk.";
+						else if (state === 3) this.node.innerHTML = "Domain is not a subdomain of ed.ac.uk.";*/
+						this.node.innerHTML = this.stateTexts[state];
+						this.node.style.backgroundColor = this.stateColours[state];
 					}
 				}
 				this.update = document.getElementById(updateId);
@@ -204,6 +221,7 @@
 				}
 			}
 			DomainList.prototype.askDomain = function (domain) {
+				this.feedback.setState(-1);
 				var req = new XMLHttpRequest();
 				req.open("GET", "/add?domain="+domain);
 				req.onreadystatechange = (function (req) {
