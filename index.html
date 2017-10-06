@@ -81,6 +81,26 @@
 				color: #111111;
 				font-weight: bold;
 			}
+
+			.button {
+				width: 200px;
+				height: 2em;
+				cursor: pointer;
+				box-sizing: border-box;
+				border: 1px solid #999999;
+				border-radius: 0.25em;
+				align-self: flex-end;
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+				justify-content: center;
+			}
+			.button:hover {
+				background-color: #eeeeee;
+			}
+			.button:active {
+				border-color: #111111;
+			}
 		</style>
 
 	</head>
@@ -97,6 +117,7 @@
 		<div id="addDomain" class="paddedText labeledInput"><div id="addDomainPrompt">Submit A New Domain:</div><input id="addDomainInput" type="text" spellcheck="false"></input></div>
 		<span class="paddedText" id="serverFeedback"></span>
 		<div id="domainList"></div>
+		<div id="updateDomainList" class="button paddedText">Update Domain List</div>
 		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Filter Domains (RegExp):</div><input id="searchDomainInput" type="text" spellcheck="false"></input></div>
 
 		<script>
@@ -133,7 +154,7 @@
 				if (this.hidden) this.show();
 				else this.hide();
 			}
-			var DomainList = function (id, searchId, submitId, feedbackId) {
+			var DomainList = function (id, searchId, submitId, feedbackId, updateId) {
 				this.node = document.getElementById(id);
 				this.searchNode = document.getElementById(searchId); 
 				this.searchNode.addEventListener("input", this.searchDomainItems.bind(this));
@@ -156,6 +177,8 @@
 						else if (state === 3) this.node.innerHTML = "Domain is not a subdomain of ed.ac.uk.";
 					}
 				}
+				this.update = document.getElementById(updateId);
+				this.update.addEventListener("click", this.getRemoteDomains.bind(this));
 				this.getRemoteDomains();
 			}
 			Object.defineProperty(DomainList.prototype, "search", {
@@ -244,7 +267,7 @@
 					}
 				}
 			}
-			var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback");
+			var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList");
 		</script>
 	</body>
 </html>
