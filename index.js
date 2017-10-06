@@ -2,6 +2,14 @@ var dns = require("dns");
 var http = require("http");
 var url = require("url");
 var fs = require("fs");
+var getHtmlCallback = function (res, err, file) {
+	if (err) {
+		res.writeHead(404);
+		res.end("index.html not found.");
+	} else {
+		res.end(file);
+	}
+}
 
 var DomainData = function (path, initCallback) {
 	this.domains = []; 
@@ -72,7 +80,8 @@ var domData = new DomainData("domains.txt", function () {
 	var server = new http.createServer(function (req, res) {
 		var parsedUrl = url.parse(req.url, true);
 		if (parsedUrl.pathname === "/" || parsedUrl.pathname === "/index.html") {
-			res.end(fs.readFileSync("index.html"));
+			//res.end(fs.readFileSync("index.html"));
+			fs.readFile("index.html", getHtmlCallback.bind(this, res));
 		} else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
 			domData.addDomainCandidate(parsedUrl.query.domain, res.end.bind(res));
 		} else if (parsedUrl.pathname === "/data" || parsedUrl.pathname === "/data/index.html") {
