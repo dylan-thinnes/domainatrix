@@ -82,6 +82,6 @@ var domData = new DomainData("domains.txt", function () {
 			res.end();
 		}
 	});
-	server.listen(8080);
+	server.listen(80);
 	//console.log(this.getDomains());
 });
