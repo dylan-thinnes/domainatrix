@@ -2,6 +2,7 @@ var dns = require("dns");
 var http = require("http");
 var url = require("url");
 var fs = require("fs");
+var ping = require("ping");
 var writeFileToRes = function (res, err, file) {
 	if (err) {
 		res.writeHead(404);
@@ -10,6 +11,80 @@ var writeFileToRes = function (res, err, file) {
 		res.end(file);
 	}
 }
+
+var Domain = function (domainName, isNew, initCallback) {
+	this.state = 0;
+	this.domainName = domainName;
+	this.isNew = isNew;
+	if (this.isNew) this.check(initCallback);
+	else this.readState(initCallback);
+}
+Domain.prototype.done = function (e) {
+	if (e === "dns") this.dnsDone = true;
+	else if (e === "ping") this.pingDone = true;
+	
+	if (this.dnsDone === true && this.pingDone === true) {
+		if (this.isNew) this.writeState();
+		this.callback(this.dns, this.ping);
+	}
+}
+Domain.prototype.check = function (callback) {
+	this.callback = callback ? callback : ()=>{};
+	this.dnsDone = false;
+	this.pingDone = false;
+	this.checkDns();
+	this.checkPing();
+}
+Domain.prototype.checkDns = function (callback) {
+	dns.lookup(this.domainName, this.setDns.bind(this, callback));
+}
+Domain.prototype.checkPing = function (callback) {
+	ping.sys.probe(this.domainName, this.setPing.bind(this, callback));
+}
+Domain.prototype.setDns = function (callback, err, res) {
+	this.dns = err ? false : true;
+	this.dnsLastCheck = Date.now();
+	if (callback) callback(this.dns);
+	this.done("dns");
+}
+Domain.prototype.setPing = function (callback, pingExists) {
+	this.ping = pingExists ? true : false;
+	this.pingLastCheck = Date.now();
+	if (callback) callback(this.ping);
+	this.done("ping");
+}
+Domain.prototype.readState = function (callback) {
+	this.callback = callback ? callback : ()=>{};
+	this.dnsDone = false;
+	this.pingDone = false;
+	fs.readFile("domains/" + this.domainName + ".txt", this.parseState.bind(this, callback));
+}
+Domain.prototype.parseState = function (callback, err, res) {
+	if (err) return;
+	else {
+		try {
+			var resJson = JSON.parse(res);
+			this.ping = resJson.ping;
+			this.dns = resJson.dns;
+			this.pingLastCheck = resJson.pingLastCheck;
+			this.dnsLastCheck = resJson.dnsLastCheck;
+			this.done("dns");
+			this.done("ping");
+		} catch (e) {
+			return;
+		}
+	}
+}
+Domain.prototype.writeState = function () {
+	//console.log("writing state...");
+	fs.writeFile("domains/" + this.domainName + ".txt", JSON.stringify({
+		ping: this.ping,
+		dns: this.dns,
+		pingLastCheck: this.pingLastCheck,
+		dnsLastCheck: this.dnsLastCheck
+	}), () => {});
+}
+module.exports.Domain = Domain;
 
 var DomainData = function (path, initCallback) {
 	this.domains = []; 
@@ -65,8 +140,10 @@ DomainData.prototype.lookupDomain = function (domain, callback, err, ip) {
 	else this.addDomain(domain, callback);
 }
 DomainData.prototype.addDomain = function (domain, callback) {
-	this.domains.push(domain);
-	this.writeDomain(domain);
+	if (this.domains.indexOf(domain) === -1) {
+		this.domains.push(domain);
+		this.writeDomain(domain);
+	}
 	callback(JSON.stringify({"state": 0, "domain": domain}));
 }
 DomainData.prototype.writeDomain = function (domain) {
@@ -77,14 +154,13 @@ DomainData.prototype.getDomains = function () {
 	return JSON.stringify(this.domains);
 }
 var domData = new DomainData("domains.txt", function () {
+	/*
 	var server = new http.createServer(function (req, res) {
 		var parsedUrl = url.parse(req.url, true);
 		if (parsedUrl.pathname === "/" || parsedUrl.pathname === "/index.html") {
 			//res.end(fs.readFileSync("index.html"));
 			fs.readFile("index.html", writeFileToRes.bind(this, res));
-		} /*else if (parsedUrl.pathname.match(/^\/[^/]+$/g) !== null) {
-			fs.readFile(parsedUrl.pathname.match(/^\/([^/]+)$/g)[1], writeFileToRes.bind(this, res));
-		}*/ else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
+		} else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
 			domData.addDomainCandidate(parsedUrl.query.domain, res.end.bind(res));
 		} else if (parsedUrl.pathname === "/data" || parsedUrl.pathname === "/data/index.html") {
 			res.end(domData.getDomains());
@@ -97,4 +173,5 @@ var domData = new DomainData("domains.txt", function () {
 	});
 	server.listen(80);
 	//console.log(this.getDomains());
+	*/
 });
