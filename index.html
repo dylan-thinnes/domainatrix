@@ -283,6 +283,7 @@
 						this.addDomainItem(resJson[ii]);
 					}
 					this.setState(4);
+					this,searchDomainItems();
 				} catch (e) {
 					this.setState(5);
 					console.log(e, "Illegitimate output from server on /data endpoint.");
