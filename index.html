@@ -283,7 +283,7 @@
 						this.addDomainItem(resJson[ii]);
 					}
 					this.setState(4);
-					this,searchDomainItems();
+					this.searchDomainItems();
 				} catch (e) {
 					this.setState(5);
 					console.log(e, "Illegitimate output from server on /data endpoint.");
@@ -331,7 +331,6 @@
 						entriesExist++;
 					}
 					this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
-
 				}
 			}
 			var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount");
