@@ -161,29 +161,40 @@
 				this.entries = {};
 				this.inputNode = document.getElementById(submitId);
 				this.inputNode.addEventListener("keydown", this.handleInputKeys.bind(this));
+				this.state = 0;
 				this.feedback = {
 					node: document.getElementById(feedbackId),
 					stateTexts: {
-						"-1": "Querying server...",
+						"-2": "Querying server for existing domains...",
+						"-1": "Querying server about submitted domain...",
 						"0":  "Domain legitimate. Added.",
 						"1":  "Domain is already in the list.",
 						"2":  "Domain has no DNS entry.",
-						"3":  "Domain is not a subdomain of ed.ac.uk."
+						"3":  "Domain is not a subdomain of ed.ac.uk.",
+						"4":  "Got the domain list from server.",
+						"5":  "Could not get the domain list from server."
 					},
 					stateColours: {
+						"-2": "#CDDC39",
 						"-1": "#CDDC39",
 						"0":  "#4CAf50",
 						"1":  "#03A9F4",
 						"2":  "#FF5722",
-						"3":  "#FF5722"
+						"3":  "#FF5722",
+						"4":  "#4CAf50",
+						"5":  "#CDDC39"
 					},
 					setState: function (state) {
 						//console.log(state);
 						/*
+						state -2: Getting server domain list.
+						state -1: Querying about one domain.
 						state 0: The domain is legitimate.
 						state 1: The domain is already in the remote list.
 						state 2: The domain has no dns lookup.
 						state 3: The domain does not meet the regular expression standard.
+						state 4: The server returned its domain list.
+						state 5: The server did not return a domain list.
 						*/
 						/*if (state === -1) this.node.innerHTML = "...";
 						else if (state === 0) this.node.innerHTML = "Domain legitimate. Added.";
@@ -206,8 +217,12 @@
 					this.searchNode.value = newSearch;
 				}
 			});
+			DomainList.prototype.setState = function (state) {
+				this.state = state;
+				this.feedback.setState(state);
+			}
 			DomainList.prototype.handleInputKeys = function (e) {
-				console.log(e, this.inputNode.value);
+				//console.log(e, this.inputNode.value);
 				if (e.keyCode === 13) {
 					//console.log("domains being sent");
 					e.preventDefault();
@@ -221,26 +236,36 @@
 				}
 			}
 			DomainList.prototype.askDomain = function (domain) {
-				this.feedback.setState(-1);
-				var req = new XMLHttpRequest();
-				req.open("GET", "/add?domain="+domain);
-				req.onreadystatechange = (function (req) {
-					if (req.readyState === 4) {
-						this.serverResponseControl(req.response);
-					}
-				}).bind(this, req);
-				req.send();
+				if (this.state >= 0) {
+					this.feedback.setState(-1);
+					var req = new XMLHttpRequest();
+					req.open("GET", "/add?domain="+domain);
+					req.onreadystatechange = (function (req) {
+						if (req.readyState === 4) {
+							this.serverResponseControl(req.response);
+						}
+					}).bind(this, req);
+					req.send();
+				} else {
+					console.log("State already running, wait until later.");
+				}
 			}
 			DomainList.prototype.getRemoteDomains = function () {
-				var req = new XMLHttpRequest();
-				req.open("GET", "/data");
-				req.onreadystatechange = (function (req) {
-					if (req.readyState === 4) {
-						//console.log(req.response);
-						this.setRemoteDomains(req.response);
-					}
-				}).bind(this, req);
-				req.send();
+				if (this.state >= 0) {
+					this.setState(-2);
+					var req = new XMLHttpRequest();
+					req.open("GET", "/data");
+					req.onreadystatechange = (function (req) {
+						if (req.readyState === 4) {
+							//console.log(req.response);
+							this.setRemoteDomains(req.response);
+						}
+					}).bind(this, req);
+					req.send();
+				} else {
+					console.log("State already running, wait until later.");
+				}
+
 			}
 			DomainList.prototype.setRemoteDomains = function (res) {
 				try {
@@ -248,14 +273,16 @@
 					for (var ii = 0; ii  < resJson.length; ii++) {
 						this.addDomainItem(resJson[ii]);
 					}
+					this.setState(4);
 				} catch (e) {
+					this.setState(5);
 					console.log(e, "Illegitimate output from server on /data endpoint.");
 				}
 			}
 			DomainList.prototype.serverResponseControl = function (res) {
 				try {
 					var resJson = JSON.parse(res);
-					this.feedback.setState(resJson.state);
+					this.setState(resJson.state);
 					if (resJson.state === 0) {
 						//console.log("Domain was accepted.");
 						this.addDomainItem(resJson.domain);
