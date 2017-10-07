@@ -2,7 +2,7 @@ var dns = require("dns");
 var http = require("http");
 var url = require("url");
 var fs = require("fs");
-var getHtmlCallback = function (res, err, file) {
+var writeFileToRes = function (res, err, file) {
 	if (err) {
 		res.writeHead(404);
 		res.end("index.html not found.");
@@ -81,11 +81,15 @@ var domData = new DomainData("domains.txt", function () {
 		var parsedUrl = url.parse(req.url, true);
 		if (parsedUrl.pathname === "/" || parsedUrl.pathname === "/index.html") {
 			//res.end(fs.readFileSync("index.html"));
-			fs.readFile("index.html", getHtmlCallback.bind(this, res));
-		} else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
+			fs.readFile("index.html", writeFileToRes.bind(this, res));
+		} /*else if (parsedUrl.pathname.match(/^\/[^/]+$/g) !== null) {
+			fs.readFile(parsedUrl.pathname.match(/^\/([^/]+)$/g)[1], writeFileToRes.bind(this, res));
+		}*/ else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
 			domData.addDomainCandidate(parsedUrl.query.domain, res.end.bind(res));
 		} else if (parsedUrl.pathname === "/data" || parsedUrl.pathname === "/data/index.html") {
 			res.end(domData.getDomains());
+		} else if (parsedUrl.pathname === "/favicon.ico") {
+			fs.readFile("favicon.ico", writeFileToRes.bind(this, res));
 		} else {
 			res.writeHead(404);
 			res.end();
