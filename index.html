@@ -43,7 +43,7 @@
 				flex: 0 0 auto;
 				margin-right: 1ch;
 			}
-			.labeledInput > *:last-child {
+			.labeledInput > *:nth-child(2) {
 				border: 0;
 				background-color: transparent;
 				border-bottom: 1px solid #999999;
@@ -53,8 +53,11 @@
 				font-family: inherit;
 				font-size: inherit;
 			}
-			.labeledInput > *:last-child:focus {
+			.labeledInput > *:nth-child(2):focus {
 				border-bottom: 1px solid #111111;
+			}
+			.labeledInput > *:nth-child(3) {
+				margin-left: 1ch;
 			}
 			#searchDomains {
 				padding-top: 0.4em;
@@ -126,7 +129,7 @@
 		<span class="paddedText" id="serverFeedback"></span>
 		<div id="domainList"></div>
 		<div id="updateDomainList" class="button paddedText">Update Domain List</div>
-		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Filter Domains (RegExp):</div><input id="searchDomainInput" type="text" spellcheck="false"></input></div>
+		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Filter Domains (RegExp):</div><input id="searchDomainInput" type="text" spellcheck="false"></input><div id="domainCount"></div></div>
 		<div class="divider"></div>
 		<div id="credit"><span>Made by <a href="https://www.github.com/dylan-thinnes">Dylan Thinnes</a></span><span>Spot a bug? Let me know on <a href="https://www.github.com/dylan-thinnes/domainatrix">the GitHub repo.</a></span></div>
 
@@ -164,13 +167,14 @@
 				if (this.hidden) this.show();
 				else this.hide();
 			}
-			var DomainList = function (id, searchId, submitId, feedbackId, updateId) {
+			var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId) {
 				this.node = document.getElementById(id);
 				this.searchNode = document.getElementById(searchId); 
 				this.searchNode.addEventListener("input", this.searchDomainItems.bind(this));
 				this.entries = {};
 				this.inputNode = document.getElementById(submitId);
 				this.inputNode.addEventListener("keydown", this.handleInputKeys.bind(this));
+				this.domainCount = document.getElementById(domainCountId);
 				this.state = 0;
 				this.feedback = {
 					node: document.getElementById(feedbackId),
@@ -243,6 +247,7 @@
 				if (this.entries[domain] === undefined) {
 					this.entries[domain] = new DomainListItem(domain);
 					this.node.appendChild(this.entries[domain].node);
+					this.searchDomainItems();
 				}
 			}
 			DomainList.prototype.askDomain = function (domain) {
@@ -306,23 +311,35 @@
 			DomainList.prototype.searchDomainItems = function (e) {
 				//console.log(e, this.search, new RegExp(this.search));
 				if (this.search === "") {
+					var entriesExist = 0;
+					var entriesShown = 0;
 					for (var domain in this.entries) {
 						this.entries[domain].show();
+						entriesExist++;
+						entriesShown++;
 					}
+					this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
 				} else {
 					try {
 						var regex = new RegExp(this.search);
 					} catch (e) {
 						return;
 					}
+					var entriesExist = 0;
+					var entriesShown = 0;
 					for (var domain in this.entries) {
 						//console.log(domain);
-						if (this.entries[domain].domain.match(regex) !== null) this.entries[domain].show();
-						else this.entries[domain].hide();
+						if (this.entries[domain].domain.match(regex) !== null) {
+							this.entries[domain].show();
+							entriesShown++;
+						} else this.entries[domain].hide();
+						entriesExist++;
 					}
+					this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
+
 				}
 			}
-			var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList");
+			var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount");
 		</script>
 	</body>
 </html>
