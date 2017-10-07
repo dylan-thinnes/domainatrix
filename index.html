@@ -131,7 +131,7 @@
 		<div id="updateDomainList" class="button paddedText">Update Domain List</div>
 		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Filter Domains (RegExp):</div><input id="searchDomainInput" type="text" spellcheck="false"></input><div id="domainCount"></div></div>
 		<div class="divider"></div>
-		<div id="credit"><span>Made by <a href="https://www.github.com/dylan-thinnes">Dylan Thinnes</a></span><span>Spot a bug? Let me know on <a href="https://www.github.com/dylan-thinnes/domainatrix">the GitHub repo.</a></span></div>
+		<div id="credit"><span>Made by <a href="https://www.github.com/dylan-thinnes">Dylan Thinnes</a></span><span>Spot a bug? Let me know on <a href="https://www.github.com/dylan-thinnes/domainatrix/issues">the GitHub repo.</a></span></div>
 
 		<script>
 			var DomainListItem = function (domain) {
@@ -168,6 +168,16 @@
 				else this.hide();
 			}
 			var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId) {
+				/*
+				state -2: Getting server domain list.
+				state -1: Querying about one domain.
+				state 0: The domain is legitimate.
+				state 1: The domain is already in the remote list.
+				state 2: The domain has no dns lookup.
+				state 3: The domain does not meet the regular expression standard.
+				state 4: The server returned its domain list.
+				state 5: The server did not return a domain list.
+				*/
 				this.node = document.getElementById(id);
 				this.searchNode = document.getElementById(searchId); 
 				this.searchNode.addEventListener("input", this.searchDomainItems.bind(this));
@@ -199,22 +209,6 @@
 						"5":  "#CDDC39"
 					},
 					setState: function (state) {
-						//console.log(state);
-						/*
-						state -2: Getting server domain list.
-						state -1: Querying about one domain.
-						state 0: The domain is legitimate.
-						state 1: The domain is already in the remote list.
-						state 2: The domain has no dns lookup.
-						state 3: The domain does not meet the regular expression standard.
-						state 4: The server returned its domain list.
-						state 5: The server did not return a domain list.
-						*/
-						/*if (state === -1) this.node.innerHTML = "...";
-						else if (state === 0) this.node.innerHTML = "Domain legitimate. Added.";
-						else if (state === 1) this.node.innerHTML = "Domain is already in the list.";
-						else if (state === 2) this.node.innerHTML = "Domain's DNS lookup can't be resolved.";
-						else if (state === 3) this.node.innerHTML = "Domain is not a subdomain of ed.ac.uk.";*/
 						this.node.innerHTML = this.stateTexts[state];
 						this.node.style.backgroundColor = this.stateColours[state];
 					}
