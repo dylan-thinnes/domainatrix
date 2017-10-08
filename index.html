@@ -79,6 +79,9 @@
 				display: flex;
 				flex-direction: row;
 			}
+			#domainListHeader {
+				margin-right: 4ch;
+			}
 			.domainPing, .domainDns, .domainCurl {
 				height: 1em;
 				width: 4ch;
@@ -141,15 +144,14 @@
 		<span class="centerText" style="font-size: 18px;">The Domain List (So Far)</span>
 		<div id="addDomain" class="paddedText labeledInput"><div id="addDomainPrompt">Submit A New Domain:</div><input id="addDomainInput" type="text" spellcheck="false"></input></div>
 		<span class="paddedText" id="serverFeedback"></span>
-		<div id="domainList">
-			<div class="domainListItem">
-				<div class="domainDns">DNS</div>
-				<div class="domainPing">Ping</div>
-				<div class="domainPingLastCheck">Last Pinged On</div>
-				<div class="domainTableSpacer"></div>
-				<span class="domainPrefix">Domain Name</span>
-			</div>
+		<div class="domainListItem" id="domainListHeader">
+			<div class="domainDns">DNS</div>
+			<div class="domainPing">Ping</div>
+			<div class="domainPingLastCheck">Last Pinged On</div>
+			<div class="domainTableSpacer"></div>
+			<span class="domainPrefix">Domain Name</span>
 		</div>
+		<div id="domainList"></div>
 		<div id="updateDomainList" class="button paddedText">Update Domain List</div>
 		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Filter Domains (RegExp):</div><input id="searchDomainInput" type="text" spellcheck="false"></input><div id="domainCount"></div></div>
 		<div class="divider"></div>
