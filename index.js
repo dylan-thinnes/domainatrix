@@ -20,20 +20,24 @@ var Domain = function (domainName, isNew, initCallback) {
 	else this.readState(initCallback);
 }
 Domain.prototype.done = function (e) {
+	console.log("done invoked with event: ", e);
 	if (e === "dns") this.dnsDone = true;
 	else if (e === "ping") this.pingDone = true;
+	//else if (e === "http") this.httpDone = true;
 	
-	if (this.dnsDone === true && this.pingDone === true) {
+	if (this.dnsDone === true && this.pingDone === true/* && this.httpDone === true*/) {
 		if (this.isNew === true && this.dns === true) this.writeState();
-		this.callback(this.dns, this.ping);
+		this.callback(this.dns, this.ping, this.http);
 	}
 }
 Domain.prototype.check = function (callback) {
 	this.callback = callback ? callback : ()=>{};
 	this.dnsDone = false;
 	this.pingDone = false;
+	//this.httpDone = false;
 	this.checkDns();
 	this.checkPing();
+	//this.checkHttp();
 }
 Domain.prototype.checkDns = function (callback) {
 	dns.lookup(this.domainName, this.setDns.bind(this, callback));
@@ -41,6 +45,16 @@ Domain.prototype.checkDns = function (callback) {
 Domain.prototype.checkPing = function (callback) {
 	ping.sys.probe(this.domainName, this.setPing.bind(this, callback));
 }
+/*Domain.prototype.checkHttp = function (callback) {
+	var req = http.request({
+		host: this.domainName,
+		path: "/",
+		port: 80,
+		method: "GET"
+	}, this.setHttp.bind(this, callback, true));
+	req.on("error", this.setHttp.bind(this, callback, false));
+	req.end();
+}*/
 Domain.prototype.setDns = function (callback, err, res) {
 	this.dns = err ? false : true;
 	this.dnsLastCheck = Date.now();
@@ -53,10 +67,18 @@ Domain.prototype.setPing = function (callback, pingExists) {
 	if (callback) callback(this.ping);
 	this.done("ping");
 }
+/*Domain.prototype.setHttp = function (callback, httpExists, res) {
+	if (httpExists === true && res.statusCode !== 404) this.http = true;
+	else this.http = false;
+	this.httpLastCheck = Date.now();
+	if (callback) callback(this.http);
+	this.done("http");
+}*/
 Domain.prototype.readState = function (callback) {
 	this.callback = callback ? callback : ()=>{};
 	this.dnsDone = false;
 	this.pingDone = false;
+	//this.httpDone = false;
 	fs.readFile("domains/" + this.domainName + ".txt", this.parseState.bind(this, callback));
 }
 Domain.prototype.parseState = function (callback, err, res) {
@@ -66,10 +88,13 @@ Domain.prototype.parseState = function (callback, err, res) {
 			var resJson = JSON.parse(res);
 			this.ping = resJson.ping;
 			this.dns = resJson.dns;
+			//this.http = resJson.http;
 			this.pingLastCheck = resJson.pingLastCheck;
 			this.dnsLastCheck = resJson.dnsLastCheck;
+			//this.httpLastCheck = resJson.httpLastCheck;
 			this.done("dns");
 			this.done("ping");
+			//this.done("http");
 		} catch (e) {
 			return;
 		}
@@ -80,8 +105,10 @@ Domain.prototype.toJson = function () {
 		domainName: this.domainName,
 		ping: this.ping,
 		dns: this.dns,
+		//http: this.http,
 		pingLastCheck: this.pingLastCheck,
-		dnsLastCheck: this.dnsLastCheck
+		dnsLastCheck: this.dnsLastCheck//,
+		//httpLastCheck: this.httpLastCheck
 	}
 }
 Domain.prototype.writeState = function () {
@@ -176,6 +203,7 @@ DomainData.prototype.getJson = function () {
 	return JSON.stringify(res);
 }
 var domData = new DomainData("domains.txt", function () {
+	console.log("initCallback started");
 	var server = new http.createServer(function (req, res) {
 		var parsedUrl = url.parse(req.url, true);
 		if (parsedUrl.pathname === "/" || parsedUrl.pathname === "/index.html") {
