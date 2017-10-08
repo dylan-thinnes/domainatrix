@@ -16,6 +16,7 @@ var Domain = function (domainName, isNew, initCallback) {
 	this.state = 0;
 	this.domainName = domainName;
 	this.isNew = isNew;
+	this.initDone = false;
 	if (this.isNew) this.check(initCallback);
 	else this.readState(initCallback);
 }
@@ -26,6 +27,7 @@ Domain.prototype.done = function (e) {
 	//else if (e === "http") this.httpDone = true;
 	
 	if (this.dnsDone === true && this.pingDone === true/* && this.httpDone === true*/) {
+		this.initDone = true;
 		if (this.isNew === true && this.dns === true) this.writeState();
 		this.callback(this.dns, this.ping, this.http);
 	}
@@ -150,7 +152,7 @@ var DomainData = function (path, initCallback) {
 	for (var ii = 0; ii < domainEntries.length; ii++) {
 		let name = domainEntries[ii].replace(/^(.+)\.txt$/g, "$1");
 		if (name === null) this.stateControl("initCandidate");
-		else this.addDomainCandidate(name, this.stateControl.bind(this, "initCandidate"));
+		else this.addDomainCandidate(name, false, this.stateControl.bind(this, "initCandidate"));
 	}
 	this.stateControl("initCandidate");
 }
@@ -159,7 +161,7 @@ DomainData.prototype.stateControl = function (event) {
 	if (event === "initCandidate") this.initCandidates--;
 	if (this.initCandidates === 0) this.initCallback();
 }
-DomainData.prototype.addDomainCandidate = function (domain, callback) {
+DomainData.prototype.addDomainCandidate = function (domain, isNew, callback) {
 	//console.log(this.domains, domain);
 	var parsedDomain = domain.match(/^([^\s]+\.|)ed\.ac\.uk$/g);
 	if (parsedDomain !== null) {
@@ -167,7 +169,7 @@ DomainData.prototype.addDomainCandidate = function (domain, callback) {
 		else {
 			var subDomain = parsedDomain[1];
 			//dns.lookup(domain, this.lookupDomain.bind(this, domain, callback));
-			this.domains[domain] = new Domain(domain, true, this.parseCandidate.bind(this, domain, callback));
+			this.domains[domain] = new Domain(domain, isNew, this.parseCandidate.bind(this, domain, callback));
 		}
 	} else callback(JSON.stringify({"state": 3}));
 }
@@ -197,6 +199,7 @@ DomainData.prototype.getJson = function () {
 	var res = [];
 	for (var index in this.domains) {
 		//res[this.domains[index].domainName] = this.domains[index].toJson();
+		if (this.domains[index].initDone === false) continue;
 		res.push(this.domains[index].toJson());
 	}
 	//console.log(res, JSON.stringify(res));
@@ -210,7 +213,7 @@ var domData = new DomainData("domains.txt", function () {
 			//res.end(fs.readFileSync("index.html"));
 			fs.readFile("index.html", writeFileToRes.bind(this, res));
 		} else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
-			domData.addDomainCandidate(parsedUrl.query.domain, res.end.bind(res));
+			domData.addDomainCandidate(parsedUrl.query.domain, true, res.end.bind(res));
 		} else if (parsedUrl.pathname === "/data" || parsedUrl.pathname === "/data/index.html") {
 			//res.end(domData.getDomains());
 			res.end(domData.getJson());
