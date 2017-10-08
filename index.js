@@ -24,7 +24,7 @@ Domain.prototype.done = function (e) {
 	else if (e === "ping") this.pingDone = true;
 	
 	if (this.dnsDone === true && this.pingDone === true) {
-		if (this.isNew) this.writeState();
+		if (this.isNew === true && this.dns === true) this.writeState();
 		this.callback(this.dns, this.ping);
 	}
 }
