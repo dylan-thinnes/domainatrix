@@ -83,6 +83,7 @@
 				height: 1em;
 				width: 4ch;
 				margin-right: 1ch;
+				text-align: center;
 			}
 			.domainTableSpacer {
 				flex: 1 1 auto;
@@ -140,7 +141,15 @@
 		<span class="centerText" style="font-size: 18px;">The Domain List (So Far)</span>
 		<div id="addDomain" class="paddedText labeledInput"><div id="addDomainPrompt">Submit A New Domain:</div><input id="addDomainInput" type="text" spellcheck="false"></input></div>
 		<span class="paddedText" id="serverFeedback"></span>
-		<div id="domainList"></div>
+		<div id="domainList">
+			<div class="domainListItem">
+				<div class="domainDns">DNS</div>
+				<div class="domainPing">Ping</div>
+				<div class="domainPingLastCheck">Last Pinged On</div>
+				<div class="domainTableSpacer"></div>
+				<span class="domainPrefix">Domain Name</span>
+			</div>
+		</div>
 		<div id="updateDomainList" class="button paddedText">Update Domain List</div>
 		<div id="searchDomains" class="labeledInput"><div id="searchDomainPrompt">Filter Domains (RegExp):</div><input id="searchDomainInput" type="text" spellcheck="false"></input><div id="domainCount"></div></div>
 		<div class="divider"></div>
@@ -172,14 +181,16 @@
 					var pingLastCheck = document.createElement("div");
 					pingLastCheck.className = "domainPingLastCheck";
 					var pingDate = new Date(this.pingLastCheck);
-					pingLastCheck.appendChild(document.createTextNode("Pinged: " + (pingDate.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + pingDate.getUTCMonth().toString().padStart(2, "0") + "/" + pingDate.getUTCDate().toString().padStart(2, "0") + " " + pingDate.getUTCHours().toString().padStart(2, "0") + ":" + pingDate.getUTCMinutes().toString().padStart(2, "0")));
+					pingLastCheck.appendChild(document.createTextNode((pingDate.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + pingDate.getUTCMonth().toString().padStart(2, "0") + "/" + pingDate.getUTCDate().toString().padStart(2, "0") + " " + pingDate.getUTCHours().toString().padStart(2, "0") + ":" + pingDate.getUTCMinutes().toString().padStart(2, "0")));
 					var tableSpacer = document.createElement("div");
 					tableSpacer.className = "domainTableSpacer";
-					var prefix = document.createElement("span");
+					var prefix = document.createElement("a");
 					prefix.className = "domainPrefix"
+					prefix.href = "http://" + this.domain;
 					prefix.appendChild(document.createTextNode(this.subdomain));
-					var suffix = document.createElement("span");
+					var suffix = document.createElement("a");
 					suffix.className = "domainSuffix"
+					suffix.href = "http://" + this.domain;
 					suffix.appendChild(document.createTextNode("ed.ac.uk"));
 					this.setDns();
 					this.setPing();
