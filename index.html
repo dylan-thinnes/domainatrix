@@ -84,12 +84,6 @@
 				width: 4ch;
 				margin-right: 1ch;
 			}
-			.domainPingLastCheck {
-				display: none;
-			}
-			.domainPing:hover + .domainPingLastCheck {
-				display: inline-block;
-			}
 			.domainTableSpacer {
 				flex: 1 1 auto;
 				width: 0;
@@ -177,7 +171,8 @@
 					this.pingNode.className = "domainPing";
 					var pingLastCheck = document.createElement("div");
 					pingLastCheck.className = "domainPingLastCheck";
-					pingLastCheck.appendChild(document.createTextNode(this.pingLastCheck));
+					var pingDate = new Date(this.pingLastCheck);
+					pingLastCheck.appendChild(document.createTextNode("Pinged: " + (pingDate.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + pingDate.getUTCMonth().toString().padStart(2, "0") + "/" + pingDate.getUTCDate().toString().padStart(2, "0") + " " + pingDate.getUTCHours().toString().padStart(2, "0") + ":" + pingDate.getUTCMinutes().toString().padStart(2, "0")));
 					var tableSpacer = document.createElement("div");
 					tableSpacer.className = "domainTableSpacer";
 					var prefix = document.createElement("span");
