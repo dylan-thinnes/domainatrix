@@ -75,22 +75,25 @@ Domain.prototype.parseState = function (callback, err, res) {
 		}
 	}
 }
-Domain.prototype.writeState = function () {
-	//console.log("writing state...");
-	fs.writeFile("domains/" + this.domainName + ".txt", JSON.stringify({
+Domain.prototype.toJson = function () {
+	return {
+		domainName: this.domainName,
 		ping: this.ping,
 		dns: this.dns,
 		pingLastCheck: this.pingLastCheck,
 		dnsLastCheck: this.dnsLastCheck
-	}), () => {});
+	}
+}
+Domain.prototype.writeState = function () {
+	//console.log("writing state...");
+	fs.writeFile("domains/" + this.domainName + ".txt", JSON.stringify(this.toJson()), () => {});
 }
 module.exports.Domain = Domain;
 
 var DomainData = function (path, initCallback) {
-	this.domains = []; 
-	this.path = path;
+	this.domains = {}; 
 	this.initCallback = initCallback;
-	this.newWrite = false;
+	/*this.newWrite = false;
 	this.fileSet = false;
 	if (typeof this.path === "string") {
 		fs.readFile(this.path, "utf8", (function (err, res) {
@@ -112,28 +115,40 @@ var DomainData = function (path, initCallback) {
 		}).bind(this));
 	} else {
 		this.stateControl("file");
+	}*/
+	var domainEntries = fs.readdirSync("./domains");
+	//console.log(domainEntries);
+	this.initCandidates = domainEntries.length + 1;
+	//console.log(this.initCandidates);
+	for (var ii = 0; ii < domainEntries.length; ii++) {
+		let name = domainEntries[ii].replace(/^(.+)\.txt$/g, "$1");
+		if (name === null) this.stateControl("initCandidate");
+		else this.addDomainCandidate(name, this.stateControl.bind(this, "initCandidate"));
 	}
+	this.stateControl("initCandidate");
 }
 DomainData.prototype.stateControl = function (event) {
-	if (event === "file") this.fileSet = true;
+	//console.log("stateControl called with " + event);
 	if (event === "initCandidate") this.initCandidates--;
-
-	if (this.fileSet && this.initCandidates === 0) this.initCallback();
-}
-DomainData.prototype.setFile = function (err, fd) {
-	this.file = fd;
-	this.stateControl("file");
+	if (this.initCandidates === 0) this.initCallback();
 }
 DomainData.prototype.addDomainCandidate = function (domain, callback) {
 	//console.log(this.domains, domain);
-	var parsedDomain = domain.match(/([^\s]+\.|)ed\.ac\.uk$/g);
+	var parsedDomain = domain.match(/^([^\s]+\.|)ed\.ac\.uk$/g);
 	if (parsedDomain !== null) {
-		if (this.domains.indexOf(domain) !== -1) callback(JSON.stringify({"state": 1}));
+		if (this.domains[domain] !== undefined) callback(JSON.stringify({"state": 1}));
 		else {
 			var subDomain = parsedDomain[1];
-			dns.lookup(domain, this.lookupDomain.bind(this, domain, callback));
+			//dns.lookup(domain, this.lookupDomain.bind(this, domain, callback));
+			this.domains[domain] = new Domain(domain, true, this.parseCandidate.bind(this, domain, callback));
 		}
 	} else callback(JSON.stringify({"state": 3}));
+}
+DomainData.prototype.parseCandidate = function (domain, callback, dns, ping) {
+	if (dns === false) {
+		delete this.domains[domain];
+		callback(JSON.stringify({"state": 2}));
+	} else callback(JSON.stringify({"state": 0}));
 }
 DomainData.prototype.lookupDomain = function (domain, callback, err, ip) {
 	if (err) callback(JSON.stringify({"state": 2}));
@@ -150,11 +165,17 @@ DomainData.prototype.writeDomain = function (domain) {
 	if (this.file !== undefined) fs.write(this.file, (this.newWrite ? "" : "\n") + domain, () => {});
 	if (this.newWrite === true) this.newWrite = false;
 }
-DomainData.prototype.getDomains = function () {
-	return JSON.stringify(this.domains);
+DomainData.prototype.getJson = function () {
+	//return JSON.stringify(this.domains);
+	var res = [];
+	for (var index in this.domains) {
+		//res[this.domains[index].domainName] = this.domains[index].toJson();
+		res.push(this.domains[index].toJson());
+	}
+	//console.log(res, JSON.stringify(res));
+	return JSON.stringify(res);
 }
 var domData = new DomainData("domains.txt", function () {
-	/*
 	var server = new http.createServer(function (req, res) {
 		var parsedUrl = url.parse(req.url, true);
 		if (parsedUrl.pathname === "/" || parsedUrl.pathname === "/index.html") {
@@ -163,7 +184,8 @@ var domData = new DomainData("domains.txt", function () {
 		} else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
 			domData.addDomainCandidate(parsedUrl.query.domain, res.end.bind(res));
 		} else if (parsedUrl.pathname === "/data" || parsedUrl.pathname === "/data/index.html") {
-			res.end(domData.getDomains());
+			//res.end(domData.getDomains());
+			res.end(domData.getJson());
 		} else if (parsedUrl.pathname === "/favicon.ico") {
 			fs.readFile("favicon.ico", writeFileToRes.bind(this, res));
 		} else {
@@ -173,5 +195,4 @@ var domData = new DomainData("domains.txt", function () {
 	});
 	server.listen(80);
 	//console.log(this.getDomains());
-	*/
 });

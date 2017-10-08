@@ -135,8 +135,8 @@
 		<div id="credit"><span>Made by <a href="https://www.github.com/dylan-thinnes">Dylan Thinnes</a></span><span>Spot a bug? Let me know on <a href="https://www.github.com/dylan-thinnes/domainatrix/issues">the GitHub repo.</a></span></div>
 
 		<script>
-			var DomainListItem = function (domain) {
-				this.domain = domain;
+			var DomainListItem = function (domainJson) {
+				this.domain = domainJson.domainName;
 				var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
 				this.hidden = false;
 				if (match === null) {
@@ -280,6 +280,7 @@
 			DomainList.prototype.setRemoteDomains = function (res) {
 				try {
 					var resJson = JSON.parse(res);
+					console.log(resJson);
 					for (var ii = 0; ii  < resJson.length; ii++) {
 						this.addDomainItem(resJson[ii]);
 					}
