@@ -76,6 +76,24 @@
 			.domainListItem {
 				text-align: right;
 				padding-top: 0.4em;
+				display: flex;
+				flex-direction: row;
+			}
+			.domainPing, .domainDns, .domainCurl {
+				height: 1em;
+				width: 4ch;
+				margin-right: 1ch;
+			}
+			.domainPingLastCheck {
+				display: none;
+			}
+			.domainPing:hover + .domainPingLastCheck {
+				display: inline-block;
+			}
+			.domainTableSpacer {
+				flex: 1 1 auto;
+				width: 0;
+				height: 1em;
 			}
 			.domainPrefix {
 				color: #111111;
@@ -136,8 +154,16 @@
 
 		<script>
 			var DomainListItem = function (domainJson) {
+				console.log("Making DomainListItem with ", domainJson);
 				this.domain = domainJson.domainName;
+				this.pingLastCheck = domainJson.pingLastCheck;
+				this.dnsLastCheck = domainJson.dnsLastCheck;
+				this.curlLastCheck = domainJson.curlLastCheck;
+				this.ping = domainJson.ping;
+				this.dns = domainJson.dns;
+				this.curl = domainJson.curl;
 				var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
+				console.log(match);
 				this.hidden = false;
 				if (match === null) {
 					this.hide();
@@ -145,16 +171,39 @@
 				} else {
 					this.subdomain = match[1];
 					this.node = document.createElement("div");
+					this.dnsNode = document.createElement("div");
+					this.dnsNode.className = "domainDns";
+					this.pingNode = document.createElement("div");
+					this.pingNode.className = "domainPing";
+					var pingLastCheck = document.createElement("div");
+					pingLastCheck.className = "domainPingLastCheck";
+					pingLastCheck.appendChild(document.createTextNode(this.pingLastCheck));
+					var tableSpacer = document.createElement("div");
+					tableSpacer.className = "domainTableSpacer";
 					var prefix = document.createElement("span");
 					prefix.className = "domainPrefix"
 					prefix.appendChild(document.createTextNode(this.subdomain));
 					var suffix = document.createElement("span");
 					suffix.className = "domainSuffix"
 					suffix.appendChild(document.createTextNode("ed.ac.uk"));
+					this.setDns();
+					this.setPing();
 					this.node.className = "domainListItem";
+					this.node.appendChild(this.dnsNode);
+					this.node.appendChild(this.pingNode);
+					this.node.appendChild(pingLastCheck);
+					this.node.appendChild(tableSpacer);
 					this.node.appendChild(prefix);
 					this.node.appendChild(suffix);
 				}
+			}
+			DomainListItem.prototype.setDns = function () {
+				if (this.dns) this.dnsNode.style.backgroundColor = "#4CAf50";
+				else this.dnsNode.style.backgroundColor = "#FF5722";
+			}
+			DomainListItem.prototype.setPing = function () {
+				if (this.ping) this.pingNode.style.backgroundColor = "#4CAf50";
+				else this.pingNode.style.backgroundColor = "#FF5722";
 			}
 			DomainListItem.prototype.hide = function () {
 				this.node.style.display = "none";
@@ -238,10 +287,10 @@
 					this.askDomain(this.inputNode.value);
 				}
 			}
-			DomainList.prototype.addDomainItem = function (domain) {
-				if (this.entries[domain] === undefined) {
-					this.entries[domain] = new DomainListItem(domain);
-					this.node.appendChild(this.entries[domain].node);
+			DomainList.prototype.addDomainItem = function (resJson) {
+				if (this.entries[resJson.domainName] === undefined) {
+					this.entries[resJson.domainName] = new DomainListItem(resJson);
+					this.node.appendChild(this.entries[resJson.domainName].node);
 					this.searchDomainItems();
 				}
 			}
@@ -280,8 +329,9 @@
 			DomainList.prototype.setRemoteDomains = function (res) {
 				try {
 					var resJson = JSON.parse(res);
-					console.log(resJson);
-					for (var ii = 0; ii  < resJson.length; ii++) {
+					console.log(resJson, resJson.length);
+					for (var ii = 0; ii < resJson.length; ii++) {
+						console.log(ii, resJson[ii]);
 						this.addDomainItem(resJson[ii]);
 					}
 					this.setState(4);
@@ -297,7 +347,7 @@
 					this.setState(resJson.state);
 					if (resJson.state === 0) {
 						//console.log("Domain was accepted.");
-						this.addDomainItem(resJson.domain);
+						this.addDomainItem(resJson.data);
 					} else {
 						//console.log("Domain was not accepted.");
 					}

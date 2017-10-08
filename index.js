@@ -148,7 +148,7 @@ DomainData.prototype.parseCandidate = function (domain, callback, dns, ping) {
 	if (dns === false) {
 		delete this.domains[domain];
 		callback(JSON.stringify({"state": 2}));
-	} else callback(JSON.stringify({"state": 0}));
+	} else callback(JSON.stringify({"state": 0, "data": this.domains[domain].toJson()}));
 }
 DomainData.prototype.lookupDomain = function (domain, callback, err, ip) {
 	if (err) callback(JSON.stringify({"state": 2}));
