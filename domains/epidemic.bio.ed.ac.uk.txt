@@ -1,0 +1,1 @@
+{"domainName":"epidemic.bio.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507430524750,"dnsLastCheck":1507430524747}

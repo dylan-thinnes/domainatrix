@@ -1,0 +1,1 @@
+{"domainName":"www.star.euclid.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507430519968,"dnsLastCheck":1507430519961}

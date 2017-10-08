@@ -1,0 +1,1 @@
+{"domainName":"www.cjd.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507430509214,"dnsLastCheck":1507430509211}

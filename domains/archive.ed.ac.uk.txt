@@ -1,0 +1,1 @@
+{"domainName":"archive.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507430504592,"dnsLastCheck":1507430504594}
