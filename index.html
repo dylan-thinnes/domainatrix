@@ -175,10 +175,10 @@
 				this.domain = domainJson.domainName;
 				this.pingLastCheck = domainJson.pingLastCheck;
 				this.dnsLastCheck = domainJson.dnsLastCheck;
-				this.curlLastCheck = domainJson.curlLastCheck;
+				this.httpLastCheck = domainJson.httpLastCheck;
 				this.ping = domainJson.ping;
 				this.dns = domainJson.dns;
-				this.curl = domainJson.curl;
+				this.http = domainJson.http;
 				var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
 				//console.log(match);
 				this.hidden = false;
