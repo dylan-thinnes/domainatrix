@@ -315,8 +315,8 @@
 				subsetLeft = subsetLeft !== undefined ? subsetLeft : 0;
 				subsetRight = subsetRight !== undefined ? subsetRight : this.orderedDomains.length;
 				while (subsetLeft !== subsetRight) {
-					var checkDomain = this.orderedDomains[Math.floor((subsetRight - subsetLeft) / 2)];
-					//console.log("checkDomain: ", checkDomain);
+					var checkDomain = this.orderedDomains[subsetLeft + Math.floor((subsetRight - subsetLeft) / 2)];
+					console.log("checkDomain: ", checkDomain, subsetLeft, subsetRight, checkDomain > domain);
 					if (checkDomain > domain) subsetRight = subsetLeft + Math.floor((subsetRight - subsetLeft) / 2);
 					else subsetLeft = subsetRight - Math.floor((subsetRight - subsetLeft) / 2);
 				}
@@ -328,6 +328,7 @@
 					var orderedIndex = this.findOrderedIndex(resJson.domainName);
 					this.orderedDomains.splice(orderedIndex, 0, resJson.domainName);
 					this.entries[resJson.domainName] = new DomainListItem(resJson);
+					console.log(orderedIndex, resJson, this.entries, this.orderedDomains);
 					if (this.node.children.length === 0) {
 						this.node.appendChild(this.entries[resJson.domainName].node);
 					} else if (orderedIndex === this.node.children.length) {
