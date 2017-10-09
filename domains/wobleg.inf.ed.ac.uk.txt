@@ -1,0 +1,1 @@
+{"domainName":"wobleg.inf.ed.ac.uk","ping":false,"dns":true,"pingLastCheck":1507549168516,"dnsLastCheck":1507549169967}
