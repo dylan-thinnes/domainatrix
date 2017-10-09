@@ -1,1 +1,0 @@
-{"domainName":"www.anc.ed.ac.uk","ping":false,"dns":true,"pingLastCheck":1507430598836,"dnsLastCheck":1507430596840}

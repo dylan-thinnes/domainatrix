@@ -1,1 +1,0 @@
-{"domainName":"www.ccace.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507430496154,"dnsLastCheck":1507430496151}

@@ -1,1 +1,0 @@
-{"domainName":"www.hcrc.ed.ac.uk","ping":false,"dns":true,"pingLastCheck":1507430594723,"dnsLastCheck":1507430592720}

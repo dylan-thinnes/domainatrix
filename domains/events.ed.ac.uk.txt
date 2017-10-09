@@ -1,1 +1,0 @@
-{"domainName":"events.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507430487211,"dnsLastCheck":1507430487227}

@@ -87,11 +87,21 @@
 				width: 4ch;
 				margin-right: 1ch;
 				text-align: center;
+				flex: 0 0 auto;
+			}
+			.domainPingLastCheck {
+				flex: 0 0 auto;
+				width: 14ch;
+				margin-right: 1ch;
 			}
 			.domainTableSpacer {
 				flex: 1 1 auto;
 				width: 0;
 				height: 1em;
+			}
+			.domainName {
+				flex: 1 1 auto;
+				word-break: break-all;
 			}
 			.domainPrefix {
 				color: #111111;
@@ -188,6 +198,8 @@
 					pingLastCheck.appendChild(document.createTextNode((pingDate.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + pingDate.getUTCMonth().toString().padStart(2, "0") + "/" + pingDate.getUTCDate().toString().padStart(2, "0") + " " + pingDate.getUTCHours().toString().padStart(2, "0") + ":" + pingDate.getUTCMinutes().toString().padStart(2, "0")));
 					var tableSpacer = document.createElement("div");
 					tableSpacer.className = "domainTableSpacer";
+					var domainName = document.createElement("div");
+					domainName.className = "domainName";
 					var prefix = document.createElement("a");
 					prefix.className = "domainPrefix"
 					prefix.href = "http://" + this.domain;
@@ -196,6 +208,8 @@
 					suffix.className = "domainSuffix"
 					suffix.href = "http://" + this.domain;
 					suffix.appendChild(document.createTextNode("ed.ac.uk"));
+					domainName.appendChild(prefix);
+					domainName.appendChild(suffix);
 					this.setDns();
 					this.setPing();
 					this.node.className = "domainListItem";
@@ -203,8 +217,7 @@
 					this.node.appendChild(this.pingNode);
 					this.node.appendChild(pingLastCheck);
 					this.node.appendChild(tableSpacer);
-					this.node.appendChild(prefix);
-					this.node.appendChild(suffix);
+					this.node.appendChild(domainName);
 				}
 			}
 			DomainListItem.prototype.setDns = function () {

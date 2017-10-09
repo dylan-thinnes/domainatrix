@@ -1,1 +1,0 @@
-{"domainName":"jings.inf.ed.ac.uk","ping":false,"dns":true,"pingLastCheck":1507430640970,"dnsLastCheck":1507430637966}

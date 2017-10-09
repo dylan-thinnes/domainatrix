@@ -1,1 +1,0 @@
-{"domainName":"www.ces.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507430504772,"dnsLastCheck":1507430504773}
