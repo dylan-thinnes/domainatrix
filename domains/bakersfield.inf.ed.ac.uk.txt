@@ -1,1 +1,0 @@
-{"domainName":"bakersfield.inf.ed.ac.uk","ping":false,"dns":true,"pingLastCheck":1507549167203,"dnsLastCheck":1507549165675}

@@ -1,1 +1,0 @@
-{"domainName":"ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507549165631,"dnsLastCheck":1507549166966}
