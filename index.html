@@ -82,7 +82,7 @@
 			#domainListHeader {
 				margin-right: 4ch;
 			}
-			.domainPing, .domainDns, .domainCurl {
+			.domainPing, .domainDns, .domainHttp {
 				height: 1em;
 				width: 4ch;
 				margin-right: 1ch;
@@ -93,6 +93,7 @@
 				flex: 0 0 auto;
 				width: 14ch;
 				margin-right: 1ch;
+				display: none;
 			}
 			.domainTableSpacer {
 				flex: 1 1 auto;
@@ -159,6 +160,7 @@
 		<div class="domainListItem" id="domainListHeader">
 			<div class="domainDns">DNS</div>
 			<div class="domainPing">Ping</div>
+			<div class="domainHttp">HTTP</div>
 			<div class="domainPingLastCheck">Last Pinged On</div>
 			<div class="domainTableSpacer"></div>
 			<span class="domainPrefix">Domain Name</span>
@@ -192,6 +194,8 @@
 					this.dnsNode.className = "domainDns";
 					this.pingNode = document.createElement("div");
 					this.pingNode.className = "domainPing";
+					this.httpNode = document.createElement("div");
+					this.httpNode.className = "domainHttp";
 					var pingLastCheck = document.createElement("div");
 					pingLastCheck.className = "domainPingLastCheck";
 					var pingDate = new Date(this.pingLastCheck);
@@ -212,9 +216,11 @@
 					domainName.appendChild(suffix);
 					this.setDns();
 					this.setPing();
+					this.setHttp();
 					this.node.className = "domainListItem";
 					this.node.appendChild(this.dnsNode);
 					this.node.appendChild(this.pingNode);
+					this.node.appendChild(this.httpNode);
 					this.node.appendChild(pingLastCheck);
 					this.node.appendChild(tableSpacer);
 					this.node.appendChild(domainName);
@@ -227,6 +233,10 @@
 			DomainListItem.prototype.setPing = function () {
 				if (this.ping) this.pingNode.style.backgroundColor = "#4CAf50";
 				else this.pingNode.style.backgroundColor = "#FF5722";
+			}
+			DomainListItem.prototype.setHttp = function () {
+				if (this.http) this.httpNode.style.backgroundColor = "#4CAf50";
+				else this.httpNode.style.backgroundColor = "#FF5722";
 			}
 			DomainListItem.prototype.hide = function () {
 				this.node.style.display = "none";
