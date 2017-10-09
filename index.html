@@ -333,7 +333,7 @@
 					} else if (orderedIndex === this.node.children.length) {
 						this.node.appendChild(this.entries[resJson.domainName].node);
 					} else {
-						this.node.children[orderedIndex].insertBefore(this.entries[resJson.domainName].node);
+						this.node.insertBefore(this.entries[resJson.domainName].node, this.node.children[orderedIndex]);
 					}
 					this.searchDomainItems();
 				}
