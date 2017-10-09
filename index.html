@@ -171,7 +171,7 @@
 
 		<script>
 			var DomainListItem = function (domainJson) {
-				console.log("Making DomainListItem with ", domainJson);
+				//console.log("Making DomainListItem with ", domainJson);
 				this.domain = domainJson.domainName;
 				this.pingLastCheck = domainJson.pingLastCheck;
 				this.dnsLastCheck = domainJson.dnsLastCheck;
@@ -180,7 +180,7 @@
 				this.dns = domainJson.dns;
 				this.curl = domainJson.curl;
 				var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
-				console.log(match);
+				//console.log(match);
 				this.hidden = false;
 				if (match === null) {
 					this.hide();
@@ -255,6 +255,7 @@
 				this.searchNode = document.getElementById(searchId); 
 				this.searchNode.addEventListener("input", this.searchDomainItems.bind(this));
 				this.entries = {};
+				this.orderedDomains = [];
 				this.inputNode = document.getElementById(submitId);
 				this.inputNode.addEventListener("keydown", this.handleInputKeys.bind(this));
 				this.domainCount = document.getElementById(domainCountId);
@@ -310,10 +311,30 @@
 					this.askDomain(this.inputNode.value);
 				}
 			}
+			DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRight) {
+				subsetLeft = subsetLeft !== undefined ? subsetLeft : 0;
+				subsetRight = subsetRight !== undefined ? subsetRight : this.orderedDomains.length;
+				while (subsetLeft !== subsetRight) {
+					var checkDomain = this.orderedDomains[Math.floor((subsetRight - subsetLeft) / 2)];
+					//console.log("checkDomain: ", checkDomain);
+					if (checkDomain > domain) subsetRight = subsetLeft + Math.floor((subsetRight - subsetLeft) / 2);
+					else subsetLeft = subsetRight - Math.floor((subsetRight - subsetLeft) / 2);
+				}
+				return subsetLeft;
+			}
 			DomainList.prototype.addDomainItem = function (resJson) {
 				if (this.entries[resJson.domainName] === undefined) {
+					//return this.findOrderedIndex(resJson);
+					var orderedIndex = this.findOrderedIndex(resJson.domainName);
+					this.orderedDomains.splice(orderedIndex, 0, resJson.domainName);
 					this.entries[resJson.domainName] = new DomainListItem(resJson);
-					this.node.appendChild(this.entries[resJson.domainName].node);
+					if (this.node.children.length === 0) {
+						this.node.appendChild(this.entries[resJson.domainName].node);
+					} else if (orderedIndex === this.node.children.length) {
+						this.node.appendChild(this.entries[resJson.domainName].node);
+					} else {
+						this.node.children[orderedIndex].insertBefore(this.entries[resJson.domainName].node);
+					}
 					this.searchDomainItems();
 				}
 			}
@@ -352,9 +373,9 @@
 			DomainList.prototype.setRemoteDomains = function (res) {
 				try {
 					var resJson = JSON.parse(res);
-					console.log(resJson, resJson.length);
+					//console.log(resJson, resJson.length);
 					for (var ii = 0; ii < resJson.length; ii++) {
-						console.log(ii, resJson[ii]);
+						//console.log(ii, resJson[ii]);
 						this.addDomainItem(resJson[ii]);
 					}
 					this.setState(4);
