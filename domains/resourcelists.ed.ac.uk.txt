@@ -1,0 +1,1 @@
+{"domainName":"resourcelists.ed.ac.uk","ping":true,"dns":true,"pingLastCheck":1507549166758,"dnsLastCheck":1507549168958}

@@ -1,0 +1,1 @@
+{"domainName":"idoru.inf.ed.ac.uk","ping":false,"dns":true,"pingLastCheck":1507549167620,"dnsLastCheck":1507549167687}

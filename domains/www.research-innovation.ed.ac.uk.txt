@@ -1,0 +1,1 @@
+{"domainName":"www.research-innovation.ed.ac.uk","ping":false,"dns":true,"pingLastCheck":1507549169422,"dnsLastCheck":1507549171150}
