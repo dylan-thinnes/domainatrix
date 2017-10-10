@@ -226,17 +226,25 @@
 					this.node.appendChild(domainName);
 				}
 			}
+			DomainListItem.prototype.colorCode = {
+				"-1": "#CDDC39",
+				"0": "#4CAF50",
+				"1": "#FF5722"
+			}
 			DomainListItem.prototype.setDns = function () {
-				if (this.dns) this.dnsNode.style.backgroundColor = "#4CAf50";
-				else this.dnsNode.style.backgroundColor = "#FF5722";
+				/*if (this.dns === 0) this.dnsNode.style.backgroundColor = "#4CAf50";
+				else this.dnsNode.style.backgroundColor = "#FF5722";*/
+				this.dnsNode.style.backgroundColor = this.colorCode[this.dns];
 			}
 			DomainListItem.prototype.setPing = function () {
-				if (this.ping) this.pingNode.style.backgroundColor = "#4CAf50";
-				else this.pingNode.style.backgroundColor = "#FF5722";
+				/*if (this.ping === 0) this.pingNode.style.backgroundColor = "#4CAf50";
+				else this.pingNode.style.backgroundColor = "#FF5722";*/
+				this.pingNode.style.backgroundColor = this.colorCode[this.ping];
 			}
 			DomainListItem.prototype.setHttp = function () {
-				if (this.http) this.httpNode.style.backgroundColor = "#4CAf50";
-				else this.httpNode.style.backgroundColor = "#FF5722";
+				/*if (this.http === 0) this.httpNode.style.backgroundColor = "#4CAf50";
+				else this.httpNode.style.backgroundColor = "#FF5722";*/
+				this.httpNode.style.backgroundColor = this.colorCode[this.http];
 			}
 			DomainListItem.prototype.hide = function () {
 				this.node.style.display = "none";
