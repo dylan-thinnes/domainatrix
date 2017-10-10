@@ -225,6 +225,23 @@
 					this.node.appendChild(tableSpacer);
 					this.node.appendChild(domainName);
 				}
+				this.updateKey = {
+					"domainName": ()=>{},
+					"dns": this.setDns.bind(this),
+					"ping": this.setPing.bind(this),
+					"http": this.setHttp.bind(this),
+					"dnsLastCheck": ()=>{},
+					"pingLastCheck": ()=>{},
+					"httpLastCheck": ()=>{}
+				}
+			}
+			DomainListItem.prototype.update = function (newJson) {
+				for (var index in newJson) {
+					if (newJson[index] !== this[index]) {
+						this[index] = newJson[index];
+						this.updateKey[index](this[index]);
+					}
+				}
 			}
 			DomainListItem.prototype.colorCode = {
 				"-1": "#CDDC39",
@@ -305,8 +322,8 @@
 						this.node.style.backgroundColor = this.stateColours[state];
 					}
 				}
-				this.update = document.getElementById(updateId);
-				this.update.addEventListener("click", this.getRemoteDomains.bind(this));
+				this.updateNode = document.getElementById(updateId);
+				this.updateNode.addEventListener("click", this.getRemoteDomains.bind(this));
 				this.getRemoteDomains();
 			}
 			Object.defineProperty(DomainList.prototype, "search", {
@@ -355,6 +372,8 @@
 						this.node.insertBefore(this.entries[resJson.domainName].node, this.node.children[orderedIndex]);
 					}
 					this.searchDomainItems();
+				} else {
+					this.entries[resJson.domainName].update(resJson);
 				}
 			}
 			DomainList.prototype.askDomain = function (domain) {
@@ -392,9 +411,7 @@
 			DomainList.prototype.setRemoteDomains = function (res) {
 				try {
 					var resJson = JSON.parse(res);
-					//console.log(resJson, resJson.length);
 					for (var ii = 0; ii < resJson.length; ii++) {
-						//console.log(ii, resJson[ii]);
 						this.addDomainItem(resJson[ii]);
 					}
 					this.setState(4);
