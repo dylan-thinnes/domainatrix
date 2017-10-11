@@ -134,19 +134,42 @@ var DomainListItem = function (domainJson) {
 		this.moreInfo = new MoreInfo(this.nodes.info, this.nodes.toggleMoreInfo, false, "Less Data & Actions -", "More Data & Actions +")
 		this.nodes.root.appendChild(this.nodes.info);
 
-		this.nodes.pingLastCheck = document.createElement("div");
-		this.nodes.pingLastCheck.className = "lastCheck";
-		this.nodes.pingLastCheck.appendChild(document.createTextNode("Ping Last Checked: " + this.formatDate(this.ping.value.lastCheck)));
+		this.nodes.dnsRow = document.createElement("div");
+		this.nodes.dnsRow.className = "domainInfoRow";
+		this.nodes.updateDns = document.createElement("div");
+		this.nodes.updateDns.className = "button domainInfoGet";
+		this.nodes.updateDns.appendChild(document.createTextNode("Recheck DNS"));
 		this.nodes.dnsLastCheck = document.createElement("div");
 		this.nodes.dnsLastCheck.className = "lastCheck";
 		this.nodes.dnsLastCheck.appendChild(document.createTextNode("DNS Last Checked: " + this.formatDate(this.dns.value.lastCheck)));
+		this.nodes.dnsRow.appendChild(this.nodes.updateDns);
+		this.nodes.dnsRow.appendChild(this.nodes.dnsLastCheck);
+		
+		this.nodes.pingRow = document.createElement("div");
+		this.nodes.pingRow.className = "domainInfoRow";
+		this.nodes.updatePing = document.createElement("div");
+		this.nodes.updatePing.className = "button domainInfoGet";
+		this.nodes.updatePing.appendChild(document.createTextNode("Recheck Ping"));
+		this.nodes.pingLastCheck = document.createElement("div");
+		this.nodes.pingLastCheck.className = "lastCheck";
+		this.nodes.pingLastCheck.appendChild(document.createTextNode("Ping Last Checked: " + this.formatDate(this.ping.value.lastCheck)));
+		this.nodes.pingRow.appendChild(this.nodes.updatePing);
+		this.nodes.pingRow.appendChild(this.nodes.pingLastCheck);
+
+		this.nodes.httpRow = document.createElement("div");
+		this.nodes.httpRow.className = "domainInfoRow";
+		this.nodes.updateHttp = document.createElement("div");
+		this.nodes.updateHttp.className = "button domainInfoGet";
+		this.nodes.updateHttp.appendChild(document.createTextNode("Recheck HTTP"));
 		this.nodes.httpLastCheck = document.createElement("div");
 		this.nodes.httpLastCheck.className = "lastCheck";
-		this.nodes.httpLastCheck.appendChild(document.createTextNode("HTTP Last Checked: " + this.formatDate(this.http.value.lastCheck)));
-		
-		this.nodes.info.appendChild(this.nodes.dnsLastCheck);
-		this.nodes.info.appendChild(this.nodes.pingLastCheck);
-		this.nodes.info.appendChild(this.nodes.httpLastCheck);
+		this.nodes.httpLastCheck.appendChild(document.createTextNode("Ping Last Checked: " + this.formatDate(this.http.value.lastCheck)));
+		this.nodes.httpRow.appendChild(this.nodes.updateHttp);
+		this.nodes.httpRow.appendChild(this.nodes.httpLastCheck);
+
+		this.nodes.info.appendChild(this.nodes.dnsRow);
+		this.nodes.info.appendChild(this.nodes.pingRow);
+		this.nodes.info.appendChild(this.nodes.httpRow);
 		/*this.nodes.pingLastCheck = document.createElement("div");
 		this.nodes.pingLastCheck.className = "domainPingLastCheck";
 		var pingDate = new Date(this.ping.lastCheck);

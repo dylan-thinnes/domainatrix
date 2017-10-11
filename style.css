@@ -37,6 +37,25 @@ a:active {
 .paddedText {
 	margin-top: 0.4em;
 }
+.button {
+	width: 200px;
+	height: 2em;
+	cursor: pointer;
+	box-sizing: border-box;
+	border: 1px solid #999999;
+	border-radius: 0.25em;
+	align-self: flex-end;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+.button:hover {
+	background-color: #eeeeee;
+}
+.button:active {
+	border-color: #111111;
+}
 
 .moreInfo {
 	display: none;
@@ -152,31 +171,24 @@ a:active {
 
 .domainInfo {
 	flex: 0 0 auto;
+	padding-left: 15ch;
+}
+.domainInfoRow {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
 	font-size: 12px;
+	padding: 0.1em 0 0.1em 0;
+}
+.domainInfoGet {
+	margin-right: 1ch;
+	width: 20ch;
+	height: 1.5em;
 }
 .lastCheck {
 	text-align: right;
 	width: 33ch;
-}
-
-.button {
-	width: 200px;
-	height: 2em;
-	cursor: pointer;
-	box-sizing: border-box;
-	border: 1px solid #999999;
-	border-radius: 0.25em;
-	align-self: flex-end;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: center;
-}
-.button:hover {
-	background-color: #eeeeee;
-}
-.button:active {
-	border-color: #111111;
+	height: 1em;
 }
 
 #credit {
