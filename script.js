@@ -27,6 +27,31 @@ RemoteProperty.prototype.setValue = function () {
 	}
 }
 
+var MoreInfo = function (infoNode, buttonNode, showing, showingText, hiddenText) {
+	this.info = infoNode;
+	this.button = buttonNode;
+	this.hiddenText = hiddenText ? hiddenText: this.button.innerHTML;
+	this.showingText = showingText ? showingText: this.button.innerHTML;
+	this.showing = showing ? showing : false;
+	this.showing = !this.showing;
+	this.toggle();
+	this.button.addEventListener("click", this.toggle.bind(this));
+}
+MoreInfo.prototype.toggle = function () {
+	if (this.showing) this.hide();
+	else this.show();
+	this.showing = !this.showing;
+}
+MoreInfo.prototype.hide = function () {
+	this.info.style.display = "none";
+	this.button.innerHTML = this.hiddenText;
+}
+MoreInfo.prototype.show = function () {
+	this.info.style.display = "initial";
+	this.button.innerHTML = this.showingText;
+}
+var blurb = new MoreInfo(document.getElementById("guide"), document.getElementById("toggleGuide"), false, "Less Info -", "More Info +");
+
 var DomainListItem = function (domainJson) {
 	//console.log("Making DomainListItem with ", domainJson);
 	this.domain = domainJson.domainName;
@@ -59,20 +84,25 @@ var DomainListItem = function (domainJson) {
 		this.nodes = {};
 		this.subdomain = match[1];
 		this.nodes.root = document.createElement("div");
+		this.nodes.root.className = "domainListItem";
+
+		this.nodes.title = document.createElement("div");
+		this.nodes.title.className = "domainTitle";
+		this.nodes.root.appendChild(this.nodes.title);
+
 		this.nodes.dns = document.createElement("div");
 		this.nodes.dns.className = "domainDns";
 		this.nodes.ping = document.createElement("div");
 		this.nodes.ping.className = "domainPing";
 		this.nodes.http = document.createElement("div");
 		this.nodes.http.className = "domainHttp";
-		this.nodes.pingLastCheck = document.createElement("div");
-		this.nodes.pingLastCheck.className = "domainPingLastCheck";
-		var pingDate = new Date(this.ping.lastCheck);
-		this.nodes.pingLastCheck.appendChild(document.createTextNode((pingDate.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + pingDate.getUTCMonth().toString().padStart(2, "0") + "/" + pingDate.getUTCDate().toString().padStart(2, "0") + " " + pingDate.getUTCHours().toString().padStart(2, "0") + ":" + pingDate.getUTCMinutes().toString().padStart(2, "0")));
+		this.nodes.toggleMoreInfo = document.createElement("a");
+		this.nodes.toggleMoreInfo.className = "toggleMoreInfo";
 		this.nodes.tableSpacer = document.createElement("div");
 		this.nodes.tableSpacer.className = "domainTableSpacer";
 		this.nodes.domainName = document.createElement("div");
 		this.nodes.domainName.className = "domainName";
+
 		this.nodes.prefix = document.createElement("a");
 		this.nodes.prefix.className = "domainPrefix"
 		this.nodes.prefix.href = "http://" + this.domain;
@@ -83,16 +113,26 @@ var DomainListItem = function (domainJson) {
 		this.nodes.suffix.appendChild(document.createTextNode("ed.ac.uk"));
 		this.nodes.domainName.appendChild(this.nodes.prefix);
 		this.nodes.domainName.appendChild(this.nodes.suffix);
+
 		this.setDns();
 		this.setPing();
 		this.setHttp();
-		this.nodes.root.className = "domainListItem";
-		this.nodes.root.appendChild(this.nodes.dns);
-		this.nodes.root.appendChild(this.nodes.ping);
-		this.nodes.root.appendChild(this.nodes.http);
-		this.nodes.root.appendChild(this.nodes.pingLastCheck);
-		this.nodes.root.appendChild(this.nodes.tableSpacer);
-		this.nodes.root.appendChild(this.nodes.domainName);
+
+		this.nodes.title.appendChild(this.nodes.dns);
+		this.nodes.title.appendChild(this.nodes.ping);
+		this.nodes.title.appendChild(this.nodes.http);
+		this.nodes.title.appendChild(this.nodes.toggleMoreInfo);
+		this.nodes.title.appendChild(this.nodes.tableSpacer);
+		this.nodes.title.appendChild(this.nodes.domainName);
+
+		this.nodes.info = document.createElement("div");
+		this.nodes.info.className = "domainInfo moreInfo";
+		this.moreInfo = new MoreInfo(this.nodes.info, this.nodes.toggleMoreInfo, false, "Less Data & Actions -", "More Data & Actions +")
+		this.nodes.root.appendChild(this.nodes.info);
+		/*this.nodes.pingLastCheck = document.createElement("div");
+		this.nodes.pingLastCheck.className = "domainPingLastCheck";
+		var pingDate = new Date(this.ping.lastCheck);
+		this.nodes.pingLastCheck.appendChild(document.createTextNode((pingDate.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + pingDate.getUTCMonth().toString().padStart(2, "0") + "/" + pingDate.getUTCDate().toString().padStart(2, "0") + " " + pingDate.getUTCHours().toString().padStart(2, "0") + ":" + pingDate.getUTCMinutes().toString().padStart(2, "0")));*/
 	}
 	this.updateKey = {
 		"domainName": ()=>{},
@@ -346,22 +386,6 @@ DomainList.prototype.searchDomainItems = function (e) {
 		this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
 	}
 }
-var moreInfo = new (function () {
-	this.button = document.getElementById("toggleMoreInfo");
-	this.node = document.getElementById("moreInfo");
-	this.showing = false;
-	this.toggle = function () {
-		if (this.showing) {
-			this.node.style.display = "";
-			this.button.innerHTML = "More Info +"
-		} else {
-			this.node.style.display = "initial";
-			this.button.innerHTML = "Less Info -"
-		}
-		this.showing = !this.showing;
-	}
-	this.button.addEventListener("click", this.toggle.bind(this));
-})();
 console.log("Script loaded.");
 var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount");
 

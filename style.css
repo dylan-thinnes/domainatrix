@@ -37,16 +37,20 @@ a:active {
 .paddedText {
 	margin-top: 0.4em;
 }
-#moreInfo {
+
+.moreInfo {
 	display: none;
 }
-#toggleMoreInfo {
+.toggleMoreInfo {
 	font-size: 12px;
 	color: #444444;
 	text-decoration: underline;
 	cursor: pointer;
 }
-#toggleMoreInfo:active {
+.toggleMoreInfo:hover {
+	background-color: #eeeeee;
+}
+.toggleMoreInfo:active {
 	color: #111111;
 }
 
@@ -69,6 +73,9 @@ a:active {
 	font-family: inherit;
 	font-size: inherit;
 }
+.labeledInput > *:nth-child(2):hover {
+	background-color: #eeeeee;
+}
 .labeledInput > *:nth-child(2):focus {
 	border-bottom: 1px solid #111111;
 }
@@ -90,26 +97,40 @@ a:active {
 
 .domainListItem {
 	text-align: right;
-	padding-top: 0.4em;
+	display: flex;
+	flex-direction: column;
+}
+.domainTitle {
+	padding: 0.2em 0 0.2em 0;
 	display: flex;
 	flex-direction: row;
+	align-items: center;
+}
+.domainTitle:hover {
+	background-color: #eeeeee;
 }
 #domainListHeader {
 	margin-right: 4ch;
 }
-.domainPing, .domainDns, .domainHttp {
+#domainListHeader > .domainTitle:hover {
+	background-color: transparent;
+}
+.domainPing, .domainDns, .domainHttp, .domainListItem > .toggleMoreInfo {
 	height: 1em;
 	width: 4ch;
 	margin-right: 1ch;
 	text-align: center;
 	flex: 0 0 auto;
 }
-.domainPingLastCheck {
+.domainInfo {
+	flex: 0 0 auto;
+}
+/*.domainPingLastCheck {
 	flex: 0 0 auto;
 	width: 14ch;
 	margin-right: 1ch;
 	display: none;
-}
+}*/
 .domainTableSpacer {
 	flex: 1 1 auto;
 	width: 0;
