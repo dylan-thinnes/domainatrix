@@ -1,4 +1,4 @@
-var RemoteProperty = function (initValue, checker, parser, change, getRemote, initCallback) {
+var RemoteProperty = function (initValue, checker, parser, change, startCallback, getRemote, initCallback) {
 	this.checker = checker ? checker : ()=>{};
 	this.parser = parser ? parser : function () {return arguments};
 	this.change = change ? change : ()=>{};
@@ -6,6 +6,7 @@ var RemoteProperty = function (initValue, checker, parser, change, getRemote, in
 	this.gettingRemote = false;
 	this.value = initValue;
 	this.callbacks = [];
+	this.startCallback = startCallback ? startCallback : ()=>{};
 	initCallback = initCallback ? initCallback : ()=>{};
 	if (getRemote === true) this.getRemote(initCallback);
 	else initCallback(this.value);
@@ -16,6 +17,7 @@ RemoteProperty.prototype.getRemote = function (callback) {
 	}
 	if (this.gettingRemote === false) {
 		this.gettingRemote = true;
+		this.startCallback(this.value);
 		this.checker(this.setValue.bind(this));
 	}
 }
@@ -69,9 +71,9 @@ var DomainListItem = function (domainJson) {
 		state: domainJson.http,
 		lastCheck: domainJson.httpLastCheck
 	}*/
-	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), false);
-	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), false);
-	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), false);
+	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), this.setDns.bind(this, {state: -1}), false);
+	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), this.setPing.bind(this, {state: -1}), false);
+	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), this.setHttp.bind(this, {state: -1}), false);
 	/*this.pingLastCheck = domainJson.pingLastCheck;
 	this.dnsLastCheck = domainJson.dnsLastCheck;
 	this.httpLastCheck = domainJson.httpLastCheck;
@@ -217,8 +219,8 @@ DomainListItem.prototype.colorCode = {
 }
 DomainListItem.prototype.setDns = function (newDns) {
 	if (newDns !== undefined) {
-		this.dns.value.state = newDns.state;
-		this.dns.value.lastCheck = newDns.lastCheck;
+		this.dns.value.state = newDns.state ? newDns.state : this.dns.value.state;
+		this.dns.value.lastCheck = newDns.lastCheck ? newDns.lastCheck : this.dns.value.lastCheck;
 	}
 	/*if (this.dns === 0) this.dnsNode.style.backgroundColor = "#4CAf50";
 	else this.dnsNode.style.backgroundColor = "#FF5722";*/
@@ -227,8 +229,8 @@ DomainListItem.prototype.setDns = function (newDns) {
 }
 DomainListItem.prototype.setPing = function (newPing) {
 	if (newPing !== undefined) {
-		this.ping.value.state = newPing.state;
-		this.ping.value.lastCheck = newPing.lastCheck;
+		this.ping.value.state = newPing.state ? newPing.state : this.ping.value.state;
+		this.ping.value.lastCheck = newPing.lastCheck ? newPing.lastCheck : this.ping.value.lastCheck;
 	}
 	/*if (this.ping === 0) this.pingNode.style.backgroundColor = "#4CAf50";
 	else this.pingNode.style.backgroundColor = "#FF5722";*/
@@ -237,8 +239,8 @@ DomainListItem.prototype.setPing = function (newPing) {
 }
 DomainListItem.prototype.setHttp = function (newHttp) {
 	if (newHttp !== undefined) {
-		this.http.value.state = newHttp.state;
-		this.http.value.lastCheck = newHttp.lastCheck;
+		this.http.value.state = newHttp.state ? newHttp.state : this.http.value.state;
+		this.http.value.lastCheck = newHttp.lastCheck ? newHttp.lastCheck : this.http.value.lastCheck;
 	}
 	/*if (this.http === 0) this.httpNode.style.backgroundColor = "#4CAf50";
 	else this.httpNode.style.backgroundColor = "#FF5722";*/
