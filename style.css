@@ -126,9 +126,6 @@ a:active {
 	flex: 0 0 auto;
 	margin-right: 1ch;
 }
-.domainInfo {
-	flex: 0 0 auto;
-}
 /*.domainPingLastCheck {
 	flex: 0 0 auto;
 	width: 14ch;
@@ -151,6 +148,15 @@ a:active {
 .domainSuffix {
 	color: #999999;
 	font-weight: bold;
+}
+
+.domainInfo {
+	flex: 0 0 auto;
+	font-size: 12px;
+}
+.lastCheck {
+	text-align: right;
+	width: 33ch;
 }
 
 .button {

@@ -8,6 +8,7 @@ var RemoteProperty = function (initValue, checker, parser, change, getRemote, in
 	this.value = initValue;
 	this.callbacks = [];
 	if (getRemote === true) this.getRemote(initCallback);
+	else initCallback(this.value);
 }
 RemoteProperty.prototype.getRemote = function (callback) {
 	for (var ii = 0; ii < arguments.length; ii++) {
@@ -129,6 +130,20 @@ var DomainListItem = function (domainJson) {
 		this.nodes.info.className = "domainInfo moreInfo";
 		this.moreInfo = new MoreInfo(this.nodes.info, this.nodes.toggleMoreInfo, false, "Less Data & Actions -", "More Data & Actions +")
 		this.nodes.root.appendChild(this.nodes.info);
+
+		this.nodes.pingLastCheck = document.createElement("div");
+		this.nodes.pingLastCheck.className = "lastCheck";
+		this.nodes.pingLastCheck.appendChild(document.createTextNode("Ping Last Checked: " + this.formatDate(this.ping.lastCheck)));
+		this.nodes.dnsLastCheck = document.createElement("div");
+		this.nodes.dnsLastCheck.className = "lastCheck";
+		this.nodes.dnsLastCheck.appendChild(document.createTextNode("DNS Last Checked: " + this.formatDate(this.dns.lastCheck)));
+		this.nodes.httpLastCheck = document.createElement("div");
+		this.nodes.httpLastCheck.className = "lastCheck";
+		this.nodes.httpLastCheck.appendChild(document.createTextNode("HTTP Last Checked: " + this.formatDate(this.http.lastCheck)));
+		
+		this.nodes.info.appendChild(this.nodes.dnsLastCheck);
+		this.nodes.info.appendChild(this.nodes.pingLastCheck);
+		this.nodes.info.appendChild(this.nodes.httpLastCheck);
 		/*this.nodes.pingLastCheck = document.createElement("div");
 		this.nodes.pingLastCheck.className = "domainPingLastCheck";
 		var pingDate = new Date(this.ping.lastCheck);
@@ -143,6 +158,10 @@ var DomainListItem = function (domainJson) {
 		"pingLastCheck": ()=>{},
 		"httpLastCheck": ()=>{}
 	}
+}
+DomainListItem.prototype.formatDate = function (timestamp) {
+	var date = new Date(timestamp);
+	return (date.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + date.getUTCMonth().toString().padStart(2, "0") + "/" + date.getUTCDate().toString().padStart(2, "0") + " " + date.getUTCHours().toString().padStart(2, "0") + ":" + date.getUTCMinutes().toString().padStart(2, "0");
 }
 DomainListItem.prototype.update = function (newJson) {
 	for (var index in newJson) {
