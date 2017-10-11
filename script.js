@@ -346,6 +346,22 @@ DomainList.prototype.searchDomainItems = function (e) {
 		this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
 	}
 }
+var moreInfo = new (function () {
+	this.button = document.getElementById("toggleMoreInfo");
+	this.node = document.getElementById("moreInfo");
+	this.showing = false;
+	this.toggle = function () {
+		if (this.showing) {
+			this.node.style.display = "";
+			this.button.innerHTML = "More Info +"
+		} else {
+			this.node.style.display = "initial";
+			this.button.innerHTML = "Less Info -"
+		}
+		this.showing = !this.showing;
+	}
+	this.button.addEventListener("click", this.toggle.bind(this));
+})();
 console.log("Script loaded.");
 var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount");
 
