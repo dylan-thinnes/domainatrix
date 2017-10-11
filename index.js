@@ -157,6 +157,7 @@ DomainData.prototype.parseDomain = function (domain) {
 
 DomainData.prototype.getXFromDomain = function (x, domain, callback) {
 	if (this.domains[domain] !== undefined) this.domains[domain][x].check(this.writeXFromDomain.bind(this, x, domain, callback));
+	else callback(JSON.stringify({"state": 2}));
 }
 DomainData.prototype.writeXFromDomain = function (x, domain, callback, state) {
 	var res = {};
