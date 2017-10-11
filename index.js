@@ -12,12 +12,12 @@ var writeFileToRes = function (res, err, file) {
 	}
 }
 
-var State = function (domainName, checker, handler, change) {
+var RemoteProperty = function (domainName, checker, handler, change) {
 	/* State 0 is resolved positive position,
 	 * State 1 is resolved negative position,
 	 * State -1 is processing or undetermined state
 	 */
-	//console.log("State initialized with args ", arguments);
+	//console.log("RemoteProperty initialized with args ", arguments);
 	this.domainName = domainName;
 	this.checker = checker;
 	this.handler = handler;
@@ -26,7 +26,7 @@ var State = function (domainName, checker, handler, change) {
 	this.callbacks = [];
 	this.change = change;
 }
-State.prototype.check = function (/* callbacks passed in here */) {
+RemoteProperty.prototype.check = function (/* callbacks passed in here */) {
 	console.log("check called with callbacks", arguments);
 	for (var ii = 0; ii < arguments.length; ii++) {
 		this.callbacks.push(arguments[ii]);
@@ -37,7 +37,7 @@ State.prototype.check = function (/* callbacks passed in here */) {
 		this.checker(this.setState.bind(this));
 	}
 }
-State.prototype.setState = function () {
+RemoteProperty.prototype.setState = function () {
 	//console.log("setState called");
 	this.lastCheck = Date.now();
 	var oldState = this.state;
@@ -47,25 +47,25 @@ State.prototype.setState = function () {
 	if (oldState !== this.state) this.change(this.state);
 	this.runCallbacks();
 }
-State.prototype.runCallbacks = function () {
+RemoteProperty.prototype.runCallbacks = function () {
 	while (this.callbacks.length > 0) {
 		(this.callbacks.pop())(this.state);
 	}
 }
-module.exports.State = State;
+module.exports.RemoteProperty = RemoteProperty;
 
 var Domain = function (domainName, isNew, initCallback) {
 	this.domainName = domainName;
 	this.isNew = isNew;
 	this.initDone = false;
-	this.dns = new State(this.domainName, function (callback) {
+	this.dns = new RemoteProperty(this.domainName, function (callback) {
 		dns.lookup(this.domainName, callback.bind(this));
 	}, function (err, res) {
 		var dns = err ? 1 : 0;
 		console.log("dns returned " + dns);
 		return dns;
 	}, this.writeState.bind(this));
-	this.ping = new State(this.domainName, function (callback) {
+	this.ping = new RemoteProperty(this.domainName, function (callback) {
 		console.log("ping called for ", this.domainName);
 		ping.sys.probe(this.domainName, callback.bind(this));
 	}, function (pingExists) {
@@ -73,7 +73,7 @@ var Domain = function (domainName, isNew, initCallback) {
 		console.log("ping returned " + ping);
 		return ping;
 	}, this.writeState.bind(this));
-	this.http = new State(this.domainName, function (callback) {
+	this.http = new RemoteProperty(this.domainName, function (callback) {
 		console.log("http called for ", this.domainName);
 		var req = http.request({
 			host: this.domainName,
@@ -109,13 +109,14 @@ Domain.prototype.parseState = function (callback, err, res) {
 			var resJson = JSON.parse(res);
 			if (resJson.dns === undefined) this.dns.check(callback, this.finishInit.bind(this, "dns"));
 			else {
-				this.ping.state = resJson.ping !== undefined && resJson.ping !== -1 ? resJson.ping : this.ping.state;
-				this.dns.state = resJson.dns !== undefined && resJson.dns !== -1 ? resJson.dns : this.dns.state;
-				this.http.state = resJson.http !== undefined && resJson.http !== -1 ? resJson.http : this.http.state;
-				this.ping.lastCheck = resJson.pingLastCheck !== undefined ? resJson.pingLastCheck : this.ping.lastCheck;
-				this.dns.lastCheck = resJson.dnsLastCheck !== undefined ? resJson.dnsLastCheck : this.dns.lastCheck;
-				this.http.lastCheck = resJson.httpLastCheck !== undefined ? resJson.httpLastCheck : this.http.lastCheck;
+				this.ping.state = resJson.ping.state !== undefined && resJson.ping.state !== -1 ? resJson.ping.state : this.ping.state;
+				this.dns.state = resJson.dns.state !== undefined && resJson.dns.state !== -1 ? resJson.dns.state : this.dns.state;
+				this.http.state = resJson.http.state !== undefined && resJson.http.state !== -1 ? resJson.http.state : this.http.state;
+				this.ping.lastCheck = resJson.ping.lastCheck !== undefined ? resJson.ping.lastCheck : this.ping.lastCheck;
+				this.dns.lastCheck = resJson.dns.lastCheck !== undefined ? resJson.dns.lastCheck : this.dns.lastCheck;
+				this.http.lastCheck = resJson.http.lastCheck !== undefined ? resJson.http.lastCheck : this.http.lastCheck;
 				this.finishInit("dns");
+				//this.writeState();
 				callback(this.dns.state);
 			}
 		} catch (e) {
@@ -126,12 +127,18 @@ Domain.prototype.parseState = function (callback, err, res) {
 Domain.prototype.toJson = function () {
 	return {
 		domainName: this.domainName,
-		ping: this.ping.state,
-		dns: this.dns.state,
-		http: this.http.state,
-		pingLastCheck: this.ping.lastCheck,
-		dnsLastCheck: this.dns.lastCheck,
-		httpLastCheck: this.http.lastCheck
+		dns: {
+			state: this.dns.state,
+			lastCheck: this.dns.lastCheck
+		},
+		ping: {
+			state: this.ping.state,
+			lastCheck: this.ping.lastCheck
+		},
+		http: {
+			state: this.http.state,
+			lastCheck: this.http.lastCheck
+		}
 	}
 }
 Domain.prototype.writeState = function () {
@@ -164,10 +171,10 @@ DomainData.prototype.getXFromDomain = function (x, domain, callback) {
 	if (this.domains[domain] !== undefined) this.domains[domain][x].check(this.writeXFromDomain.bind(this, x, domain, callback));
 }
 DomainData.prototype.writeXFromDomain = function (x, domain, callback, state) {
-	var res = {
-		"state": state,
-		"lastCheck": this.domains[domain][x].lastCheck
-	}
+	var res = {};
+	res[x] = {};
+	res[x]["state"] = state;
+	res[x]["lastCheck"] = this.domains[domain][x].lastCheck
 	callback(JSON.stringify(res));
 }
 
