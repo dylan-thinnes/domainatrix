@@ -1,0 +1,137 @@
+body {
+	margin: 0 auto 0 auto;
+	padding: 5px 0 5px 0;
+	box-sizing: border-box;
+	max-width: 700px;
+	height: 100vh;
+	background-color: #f8f8f8;
+	color: #111111;
+	font-size: 16px;
+	display: flex;
+	flex-direction: column;
+	font-family: monospace;
+	/*line-height: 1.2em;*/
+}
+body > * {
+	flex: 0 0 auto;
+}
+.divider {
+	width: 100%;
+	margin-top: 0.4em;
+	border-bottom: 1px solid #111111;
+	margin-bottom: 0.4em;
+}
+.centerText {
+	width: 100%;
+	text-align: center;
+}
+.paddedText {
+	margin-top: 0.4em;
+}
+
+.labeledInput {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+}
+.labeledInput > *:first-child {
+	flex: 0 0 auto;
+	margin-right: 1ch;
+}
+.labeledInput > *:nth-child(2) {
+	border: 0;
+	background-color: transparent;
+	border-bottom: 1px solid #999999;
+	outline: none;
+	flex: 1 1 auto;
+	padding: 0;
+	font-family: inherit;
+	font-size: inherit;
+}
+.labeledInput > *:nth-child(2):focus {
+	border-bottom: 1px solid #111111;
+}
+.labeledInput > *:nth-child(3) {
+	margin-left: 1ch;
+}
+#searchDomains {
+	padding-top: 0.4em;
+}
+#serverFeedback {
+	padding-left: 21ch;
+}
+
+#domainList {
+	flex: 1 1 auto;
+	overflow-y: scroll;
+	padding-right: 2ch;
+}
+
+.domainListItem {
+	text-align: right;
+	padding-top: 0.4em;
+	display: flex;
+	flex-direction: row;
+}
+#domainListHeader {
+	margin-right: 4ch;
+}
+.domainPing, .domainDns, .domainHttp {
+	height: 1em;
+	width: 4ch;
+	margin-right: 1ch;
+	text-align: center;
+	flex: 0 0 auto;
+}
+.domainPingLastCheck {
+	flex: 0 0 auto;
+	width: 14ch;
+	margin-right: 1ch;
+	display: none;
+}
+.domainTableSpacer {
+	flex: 1 1 auto;
+	width: 0;
+	height: 1em;
+}
+.domainName {
+	flex: 1 1 auto;
+	word-break: break-all;
+}
+.domainPrefix {
+	color: #111111;
+	font-weight: bolder;
+}
+.domainSuffix {
+	color: #999999;
+	font-weight: bold;
+}
+
+.button {
+	width: 200px;
+	height: 2em;
+	cursor: pointer;
+	box-sizing: border-box;
+	border: 1px solid #999999;
+	border-radius: 0.25em;
+	align-self: flex-end;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+.button:hover {
+	background-color: #eeeeee;
+}
+.button:active {
+	border-color: #111111;
+}
+
+#credit {
+	font-size: 12px;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+

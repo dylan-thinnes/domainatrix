@@ -15,7 +15,6 @@ var writeFileToRes = function (res, err, file) {
 var State = function (domainName, checker, handler, change) {
 	/* State 0 is resolved positive position,
 	 * State 1 is resolved negative position,
-	 * State 2 is timed out position,
 	 * State -1 is processing or undetermined state
 	 */
 	//console.log("State initialized with args ", arguments);
@@ -44,7 +43,7 @@ State.prototype.setState = function () {
 	this.state = this.handler.apply(this, arguments);
 	//console.log("state set to...", this.state);
 	//console.log(this.callbacks);
-	if (oldState !== this.state) this.change();
+	if (oldState !== this.state) this.change(this.state);
 	while (this.callbacks.length > 0) {
 		(this.callbacks.pop())(this.state);
 	}
@@ -213,10 +212,15 @@ var domData = new DomainData("domains.txt", function () {
 	var server = new http.createServer(function (req, res) {
 		var parsedUrl = url.parse(req.url, true);
 		if (parsedUrl.pathname === "/" || parsedUrl.pathname === "/index.html") {
-			//res.end(fs.readFileSync("index.html"));
+			res.setHeader("Content-Type", "text/html");
 			fs.readFile("index.html", writeFileToRes.bind(this, res));
+		} else if (parsedUrl.pathname === "/script.js") {
+			res.setHeader("Content-Type", "application/script");
+			fs.readFile("script.js", writeFileToRes.bind(this, res));
+		} else if (parsedUrl.pathname === "/style.css") {
+			res.setHeader("Content-Type", "text/css");
+			fs.readFile("style.css", writeFileToRes.bind(this, res));
 		} else if (parsedUrl.pathname === "/add" || parsedUrl.pathname === "/add/index.html") {
-			//domData.dnsDomain(parsedUrl.query.domain, res.end.bind(true));
 			domData.addDomainCandidate(parsedUrl.query.domain, true, res.end.bind(res));
 		} else if (parsedUrl.pathname === "/dns" || parsedUrl.pathname === "/dns/index.html") {
 			//domData.dnsDomain(parsedUrl.query.domain, res.end.bind(res));
