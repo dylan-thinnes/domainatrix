@@ -219,8 +219,8 @@ DomainListItem.prototype.colorCode = {
 }
 DomainListItem.prototype.setDns = function (newDns) {
 	if (newDns !== undefined) {
-		this.dns.value.state = newDns.state ? newDns.state : this.dns.value.state;
-		this.dns.value.lastCheck = newDns.lastCheck ? newDns.lastCheck : this.dns.value.lastCheck;
+		this.dns.value.state = newDns.state !== undefined ? newDns.state : this.dns.value.state;
+		this.dns.value.lastCheck = newDns.lastCheck !== undefined ? newDns.lastCheck : this.dns.value.lastCheck;
 	}
 	/*if (this.dns === 0) this.dnsNode.style.backgroundColor = "#4CAf50";
 	else this.dnsNode.style.backgroundColor = "#FF5722";*/
@@ -229,8 +229,8 @@ DomainListItem.prototype.setDns = function (newDns) {
 }
 DomainListItem.prototype.setPing = function (newPing) {
 	if (newPing !== undefined) {
-		this.ping.value.state = newPing.state ? newPing.state : this.ping.value.state;
-		this.ping.value.lastCheck = newPing.lastCheck ? newPing.lastCheck : this.ping.value.lastCheck;
+		this.ping.value.state = newPing.state !== undefined ? newPing.state : this.ping.value.state;
+		this.ping.value.lastCheck = newPing.lastCheck !== undefined ? newPing.lastCheck : this.ping.value.lastCheck;
 	}
 	/*if (this.ping === 0) this.pingNode.style.backgroundColor = "#4CAf50";
 	else this.pingNode.style.backgroundColor = "#FF5722";*/
@@ -239,8 +239,8 @@ DomainListItem.prototype.setPing = function (newPing) {
 }
 DomainListItem.prototype.setHttp = function (newHttp) {
 	if (newHttp !== undefined) {
-		this.http.value.state = newHttp.state ? newHttp.state : this.http.value.state;
-		this.http.value.lastCheck = newHttp.lastCheck ? newHttp.lastCheck : this.http.value.lastCheck;
+		this.http.value.state = newHttp.state !== undefined ? newHttp.state : this.http.value.state;
+		this.http.value.lastCheck = newHttp.lastCheck !== undefined ? newHttp.lastCheck : this.http.value.lastCheck;
 	}
 	/*if (this.http === 0) this.httpNode.style.backgroundColor = "#4CAf50";
 	else this.httpNode.style.backgroundColor = "#FF5722";*/
