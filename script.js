@@ -12,7 +12,7 @@ var RemoteProperty = function (initValue, checker, parser, change, getRemote, in
 }
 RemoteProperty.prototype.getRemote = function (callback) {
 	for (var ii = 0; ii < arguments.length; ii++) {
-		this.callbacks.push(arguments[ii]);
+		if (typeof arguments[ii] === "function") this.callbacks.push(arguments[ii]);
 	}
 	if (this.gettingRemote === false) {
 		this.gettingRemote = true;
@@ -69,9 +69,9 @@ var DomainListItem = function (domainJson) {
 		state: domainJson.http,
 		lastCheck: domainJson.httpLastCheck
 	}*/
-	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), function (res) {return res;}, this.update.bind(this), false);
-	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), function (res) {return res;}, this.update.bind(this), false);
-	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), function (res) {return res;}, this.update.bind(this), false);
+	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), false);
+	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), false);
+	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), false);
 	/*this.pingLastCheck = domainJson.pingLastCheck;
 	this.dnsLastCheck = domainJson.dnsLastCheck;
 	this.httpLastCheck = domainJson.httpLastCheck;
@@ -139,6 +139,7 @@ var DomainListItem = function (domainJson) {
 		this.nodes.updateDns = document.createElement("div");
 		this.nodes.updateDns.className = "button domainInfoGet";
 		this.nodes.updateDns.appendChild(document.createTextNode("Recheck DNS"));
+		this.nodes.updateDns.addEventListener("click", this.dns.getRemote.bind(this.dns, ()=>{}));
 		this.nodes.dnsLastCheck = document.createElement("div");
 		this.nodes.dnsLastCheck.className = "lastCheck";
 		this.nodes.dnsLastCheck.appendChild(document.createTextNode("DNS Last Checked: " + this.formatDate(this.dns.value.lastCheck)));
@@ -150,6 +151,7 @@ var DomainListItem = function (domainJson) {
 		this.nodes.updatePing = document.createElement("div");
 		this.nodes.updatePing.className = "button domainInfoGet";
 		this.nodes.updatePing.appendChild(document.createTextNode("Recheck Ping"));
+		this.nodes.updatePing.addEventListener("click", this.ping.getRemote.bind(this.ping, ()=>{}));
 		this.nodes.pingLastCheck = document.createElement("div");
 		this.nodes.pingLastCheck.className = "lastCheck";
 		this.nodes.pingLastCheck.appendChild(document.createTextNode("Ping Last Checked: " + this.formatDate(this.ping.value.lastCheck)));
@@ -161,9 +163,10 @@ var DomainListItem = function (domainJson) {
 		this.nodes.updateHttp = document.createElement("div");
 		this.nodes.updateHttp.className = "button domainInfoGet";
 		this.nodes.updateHttp.appendChild(document.createTextNode("Recheck HTTP"));
+		this.nodes.updateHttp.addEventListener("click", this.http.getRemote.bind(this.http, ()=>{}));
 		this.nodes.httpLastCheck = document.createElement("div");
 		this.nodes.httpLastCheck.className = "lastCheck";
-		this.nodes.httpLastCheck.appendChild(document.createTextNode("Ping Last Checked: " + this.formatDate(this.http.value.lastCheck)));
+		this.nodes.httpLastCheck.appendChild(document.createTextNode("HTTP Last Checked: " + this.formatDate(this.http.value.lastCheck)));
 		this.nodes.httpRow.appendChild(this.nodes.updateHttp);
 		this.nodes.httpRow.appendChild(this.nodes.httpLastCheck);
 
@@ -192,9 +195,9 @@ DomainListItem.prototype.formatDate = function (timestamp) {
 }
 DomainListItem.prototype.getX = function (endpoint, callback) {
 	var req = new XMLHttpRequest();
-	req.open("GET", endpoint + "?domain=" + this.domainName);
-	req.onreadystate = (function (callback) {
-		if (this.readyState === 4 && this.statusCode === 404) {
+	req.open("GET", endpoint + "?domain=" + this.domain);
+	req.onreadystatechange = (function (callback) {
+		if (this.readyState === 4) {
 			callback(req.response);
 		}
 	}).bind(req, callback);
@@ -220,6 +223,7 @@ DomainListItem.prototype.setDns = function (newDns) {
 	/*if (this.dns === 0) this.dnsNode.style.backgroundColor = "#4CAf50";
 	else this.dnsNode.style.backgroundColor = "#FF5722";*/
 	this.nodes.dns.style.backgroundColor = this.colorCode[this.dns.value.state];
+	this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.value.lastCheck);
 }
 DomainListItem.prototype.setPing = function (newPing) {
 	if (newPing !== undefined) {
@@ -229,6 +233,7 @@ DomainListItem.prototype.setPing = function (newPing) {
 	/*if (this.ping === 0) this.pingNode.style.backgroundColor = "#4CAf50";
 	else this.pingNode.style.backgroundColor = "#FF5722";*/
 	this.nodes.ping.style.backgroundColor = this.colorCode[this.ping.value.state];
+	this.nodes.pingLastCheck.innerHTML = "Ping Last Checked: " + this.formatDate(this.ping.value.lastCheck);
 }
 DomainListItem.prototype.setHttp = function (newHttp) {
 	if (newHttp !== undefined) {
@@ -238,6 +243,7 @@ DomainListItem.prototype.setHttp = function (newHttp) {
 	/*if (this.http === 0) this.httpNode.style.backgroundColor = "#4CAf50";
 	else this.httpNode.style.backgroundColor = "#FF5722";*/
 	this.nodes.http.style.backgroundColor = this.colorCode[this.http.value.state];
+	this.nodes.httpLastCheck.innerHTML = "HTTP Last Checked: " + this.formatDate(this.http.value.lastCheck);
 }
 DomainListItem.prototype.hide = function () {
 	this.nodes.root.style.display = "none";
