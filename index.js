@@ -17,7 +17,6 @@ var RemoteProperty = function (domainName, checker, handler, change) {
 	 * State 1 is resolved negative position,
 	 * State -1 is processing or undetermined state
 	 */
-	//console.log("RemoteProperty initialized with args ", arguments);
 	this.domainName = domainName;
 	this.checker = checker;
 	this.handler = handler;
@@ -27,7 +26,6 @@ var RemoteProperty = function (domainName, checker, handler, change) {
 	this.change = change;
 }
 RemoteProperty.prototype.check = function (/* callbacks passed in here */) {
-	console.log("check called with callbacks", arguments);
 	for (var ii = 0; ii < arguments.length; ii++) {
 		this.callbacks.push(arguments[ii]);
 	}
@@ -38,12 +36,9 @@ RemoteProperty.prototype.check = function (/* callbacks passed in here */) {
 	}
 }
 RemoteProperty.prototype.setState = function () {
-	//console.log("setState called");
 	this.lastCheck = Date.now();
 	var oldState = this.state;
 	this.state = this.handler.apply(this, arguments);
-	//console.log("state set to...", this.state);
-	//console.log(this.callbacks);
 	if (oldState !== this.state) this.change(this.state);
 	this.runCallbacks();
 }
@@ -62,19 +57,15 @@ var Domain = function (domainName, isNew, initCallback) {
 		dns.lookup(this.domainName, callback.bind(this));
 	}, function (err, res) {
 		var dns = err ? 1 : 0;
-		console.log("dns returned " + dns);
 		return dns;
 	}, this.writeState.bind(this));
 	this.ping = new RemoteProperty(this.domainName, function (callback) {
-		console.log("ping called for ", this.domainName);
 		ping.sys.probe(this.domainName, callback.bind(this));
 	}, function (pingExists) {
 		var ping = pingExists ? 0 : 1;
-		console.log("ping returned " + ping);
 		return ping;
 	}, this.writeState.bind(this));
 	this.http = new RemoteProperty(this.domainName, function (callback) {
-		console.log("http called for ", this.domainName);
 		var req = http.request({
 			host: this.domainName,
 			path: "/",
@@ -85,9 +76,7 @@ var Domain = function (domainName, isNew, initCallback) {
 		req.on("error", callback.bind(this, false, req, false));
 		req.end();
 	}, function (http, req, cancel) {
-		//if (cancel === true) req.abort();
 		http = http ? 0 : 1;
-		console.log("http returned " + http);
 		return http;
 	}, this.writeState.bind(this));
 	if (this.isNew === true) {
@@ -159,7 +148,6 @@ var DomainData = function (path, initCallback) {
 	this.callbackControl("initCandidate");
 }
 DomainData.prototype.callbackControl = function (event) {
-	console.log("callbackControl called with " + event, this.initCandidates);
 	if (event === "initCandidate") this.initCandidates--;
 	if (this.initCandidates === 0) this.initCallback();
 }
@@ -179,7 +167,6 @@ DomainData.prototype.writeXFromDomain = function (x, domain, callback, state) {
 }
 
 DomainData.prototype.addDomainCandidate = function (domain, isNew, callback) {
-	//console.log(this.domains, domain);
 	var parsedDomain = this.parseDomain(domain);
 	if (parsedDomain !== null) {
 		if (this.domains[domain] !== undefined) callback(JSON.stringify({"state": 1}));
@@ -190,36 +177,28 @@ DomainData.prototype.addDomainCandidate = function (domain, isNew, callback) {
 	} else callback(JSON.stringify({"state": 3}));
 }
 DomainData.prototype.parseCandidate = function (domain, callback, dns) {
-	//console.log("parsing candidate", domain, dns);
 	if (dns !== 0) {
 		delete this.domains[domain];
 		callback(JSON.stringify({"state": 2}));
 	} else {
 		/*this.domains[domain].checkPing();
 		this.domains[domain].checkHttp();*/
-		//console.log("Returning data on ", domain);
 		callback(JSON.stringify({"state": 0, "data": this.domains[domain].toJson()}));
 	}
 }
 DomainData.prototype.getJson = function () {
 	//return JSON.stringify(this.domains);
 	var res = [];
-	//console.log("getJson started...", this.domains);
 	for (var index in this.domains) {
-		//console.log("index is ", index);
 		//res[this.domains[index].domainName] = this.domains[index].toJson();
 		if (this.domains[index].initDone === false) continue;
 		res.push(this.domains[index].toJson());
 	}
-	//console.log(res, JSON.stringify(res));
 	return JSON.stringify(res);
 }
 module.exports.DomainData = DomainData;
 
 var domData = new DomainData("domains.txt", function () {
-	//console.log("initCallback started");
-	//console.log(domData.domains);
-	//console.log(domData.getJson());
 	var server = new http.createServer(function (req, res) {
 		var parsedUrl = url.parse(req.url, true);
 		if (parsedUrl.pathname === "/" || parsedUrl.pathname === "/index.html") {
@@ -256,5 +235,4 @@ var domData = new DomainData("domains.txt", function () {
 		}
 	});
 	server.listen(80);
-	//console.log(this.getDomains());
 });
