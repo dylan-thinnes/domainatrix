@@ -1,0 +1,1 @@
+{"domainName":"projsubs.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928439},"ping":{"state":1,"lastCheck":1507604199339},"http":{"state":0,"lastCheck":1507604199395}}

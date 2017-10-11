@@ -1,0 +1,1 @@
+{"domainName":"wiki.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928574},"ping":{"state":0,"lastCheck":1507604351297},"http":{"state":0,"lastCheck":1507604351357}}

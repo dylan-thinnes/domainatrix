@@ -1,0 +1,1 @@
+{"domainName":"homepages.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928376},"ping":{"state":1,"lastCheck":1507604055202},"http":{"state":0,"lastCheck":1507604055273}}

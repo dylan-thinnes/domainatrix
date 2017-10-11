@@ -1,0 +1,1 @@
+{"domainName":"global.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928376},"ping":{"state":0,"lastCheck":1507604050355},"http":{"state":0,"lastCheck":1507604050984}}

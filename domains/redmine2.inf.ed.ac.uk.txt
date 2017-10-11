@@ -1,0 +1,1 @@
+{"domainName":"redmine2.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928459},"ping":{"state":1,"lastCheck":1507604231962},"http":{"state":1,"lastCheck":1507604242022}}

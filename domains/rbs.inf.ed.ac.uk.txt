@@ -1,0 +1,1 @@
+{"domainName":"rbs.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928453},"ping":{"state":1,"lastCheck":1507604205684},"http":{"state":1,"lastCheck":1507604215725}}

@@ -1,0 +1,1 @@
+{"domainName":"www.walterscott.lib.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928725},"ping":{"state":0,"lastCheck":1507604430495},"http":{"state":0,"lastCheck":1507604430537}}

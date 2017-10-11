@@ -1,0 +1,1 @@
+{"domainName":"dtest1.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928372},"ping":{"state":1,"lastCheck":1507603988337},"http":{"state":1,"lastCheck":1507603998379}}

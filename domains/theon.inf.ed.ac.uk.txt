@@ -1,0 +1,1 @@
+{"domainName":"theon.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928529},"ping":{"state":1,"lastCheck":1507604297930},"http":{"state":1,"lastCheck":1507604307987}}

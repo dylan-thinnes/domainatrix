@@ -1,0 +1,1 @@
+{"domainName":"edinburghnlp.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928372},"ping":{"state":1,"lastCheck":1507604010558},"http":{"state":0,"lastCheck":1507604010863}}

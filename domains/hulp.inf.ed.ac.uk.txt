@@ -1,0 +1,1 @@
+{"domainName":"hulp.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928377},"ping":{"state":1,"lastCheck":1507604062286},"http":{"state":1,"lastCheck":1507604072350}}

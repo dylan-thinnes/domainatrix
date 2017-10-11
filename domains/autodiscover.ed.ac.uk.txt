@@ -1,0 +1,1 @@
+{"domainName":"autodiscover.ed.ac.uk","dns":{"state":0,"lastCheck":1507750442768},"ping":{"state":0,"lastCheck":1507603897191},"http":{"state":0,"lastCheck":1507603897239}}

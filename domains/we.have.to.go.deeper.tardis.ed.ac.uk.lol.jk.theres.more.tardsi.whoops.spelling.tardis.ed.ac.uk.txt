@@ -1,0 +1,1 @@
+{"domainName":"we.have.to.go.deeper.tardis.ed.ac.uk.lol.jk.theres.more.tardsi.whoops.spelling.tardis.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928540},"ping":{"state":0,"lastCheck":1507604316877},"http":{"state":1,"lastCheck":1507604316931}}

@@ -1,0 +1,1 @@
+{"domainName":"www.eusa.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928665},"ping":{"state":1,"lastCheck":1507604409169},"http":{"state":0,"lastCheck":1507604409258}}

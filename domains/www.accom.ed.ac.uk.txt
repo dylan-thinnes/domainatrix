@@ -1,0 +1,1 @@
+{"domainName":"www.accom.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928592},"ping":{"state":0,"lastCheck":1507604387512},"http":{"state":0,"lastCheck":1507604387838}}

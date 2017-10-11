@@ -1,0 +1,1 @@
+{"domainName":"www.learn.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928679},"ping":{"state":0,"lastCheck":1507604417225},"http":{"state":0,"lastCheck":1507604417263}}

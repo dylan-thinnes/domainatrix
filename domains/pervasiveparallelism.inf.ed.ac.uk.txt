@@ -1,0 +1,1 @@
+{"domainName":"pervasiveparallelism.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928422},"ping":{"state":1,"lastCheck":1507604178516},"http":{"state":0,"lastCheck":1507604178823}}

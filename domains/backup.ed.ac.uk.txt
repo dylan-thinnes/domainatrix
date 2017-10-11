@@ -1,0 +1,1 @@
+{"domainName":"backup.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928362},"ping":{"state":1,"lastCheck":1507603923523},"http":{"state":1,"lastCheck":1507603933582}}

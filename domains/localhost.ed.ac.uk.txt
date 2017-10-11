@@ -1,0 +1,1 @@
+{"domainName":"localhost.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928394},"ping":{"state":0,"lastCheck":1507604160964},"http":{"state":0,"lastCheck":1507604161006}}

@@ -1,0 +1,1 @@
+{"domainName":"www.epay.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928663},"ping":{"state":1,"lastCheck":1507604406927},"http":{"state":0,"lastCheck":1507604407126}}

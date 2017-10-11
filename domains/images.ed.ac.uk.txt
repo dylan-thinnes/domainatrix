@@ -1,0 +1,1 @@
+{"domainName":"images.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928584},"ping":{"state":0,"lastCheck":1507604089131},"http":{"state":0,"lastCheck":1507604089465}}

@@ -1,0 +1,1 @@
+{"domainName":"rt4test.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928480},"ping":{"state":1,"lastCheck":1507604256611},"http":{"state":0,"lastCheck":1507604256681}}

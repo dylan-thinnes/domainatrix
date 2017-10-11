@@ -1,0 +1,1 @@
+{"domainName":"www.drps.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928650},"ping":{"state":0,"lastCheck":1507604402530},"http":{"state":0,"lastCheck":1507604402577}}

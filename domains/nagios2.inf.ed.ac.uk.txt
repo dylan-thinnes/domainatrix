@@ -1,0 +1,1 @@
+{"domainName":"nagios2.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928400},"ping":{"state":1,"lastCheck":1507604169692},"http":{"state":0,"lastCheck":1507604169765}}

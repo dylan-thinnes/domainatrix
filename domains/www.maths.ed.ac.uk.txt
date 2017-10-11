@@ -1,0 +1,1 @@
+{"domainName":"www.maths.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928705},"ping":{"state":0,"lastCheck":1507604421672},"http":{"state":0,"lastCheck":1507604421738}}

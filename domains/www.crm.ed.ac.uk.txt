@@ -1,0 +1,1 @@
+{"domainName":"www.crm.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928630},"ping":{"state":0,"lastCheck":1507604399415},"http":{"state":0,"lastCheck":1507604399482}}

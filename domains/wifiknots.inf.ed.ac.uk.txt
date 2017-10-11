@@ -1,0 +1,1 @@
+{"domainName":"wifiknots.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928570},"ping":{"state":1,"lastCheck":1507604351117},"http":{"state":0,"lastCheck":1507604351258}}

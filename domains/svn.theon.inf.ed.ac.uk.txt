@@ -1,0 +1,1 @@
+{"domainName":"svn.theon.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928520},"ping":{"state":1,"lastCheck":1507604283692},"http":{"state":1,"lastCheck":1507604293735}}

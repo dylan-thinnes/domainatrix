@@ -1,0 +1,1 @@
+{"domainName":"tree.bio.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928525},"ping":{"state":0,"lastCheck":1507604308049},"http":{"state":0,"lastCheck":1507604308104}}

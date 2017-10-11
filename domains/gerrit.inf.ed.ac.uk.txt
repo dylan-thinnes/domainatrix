@@ -1,0 +1,1 @@
+{"domainName":"gerrit.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928375},"ping":{"state":1,"lastCheck":1507604038042},"http":{"state":0,"lastCheck":1507604038151}}

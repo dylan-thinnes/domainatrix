@@ -1,0 +1,1 @@
+{"domainName":"wake.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928532},"ping":{"state":1,"lastCheck":1507604312259},"http":{"state":0,"lastCheck":1507604312425}}

@@ -1,0 +1,1 @@
+{"domainName":"www.ease.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928650},"ping":{"state":1,"lastCheck":1507604404623},"http":{"state":0,"lastCheck":1507604404678}}

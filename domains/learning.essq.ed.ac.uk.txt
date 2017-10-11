@@ -1,0 +1,1 @@
+{"domainName":"learning.essq.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928385},"ping":{"state":0,"lastCheck":1507604158740},"http":{"state":0,"lastCheck":1507604158795}}

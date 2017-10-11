@@ -1,0 +1,1 @@
+{"domainName":"computing.help.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928365},"ping":{"state":1,"lastCheck":1507603962806},"http":{"state":0,"lastCheck":1507603963235}}

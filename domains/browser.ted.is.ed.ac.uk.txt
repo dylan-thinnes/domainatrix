@@ -1,0 +1,1 @@
+{"domainName":"browser.ted.is.ed.ac.uk","dns":{"state":0,"lastCheck":1507604201349},"ping":{"state":0,"lastCheck":1507604473794},"http":{"state":0,"lastCheck":1507604466158}}
