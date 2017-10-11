@@ -31,7 +31,8 @@ State.prototype.check = function (/* callbacks passed in here */) {
 	for (var ii = 0; ii < arguments.length; ii++) {
 		this.callbacks.push(arguments[ii]);
 	}
-	if (this.state !== -1) {
+	if (this.lastCheck >= Date.now() - 30*60*1000) this.runCallbacks();
+	else if (this.state !== -1) {
 		this.state = -1;
 		this.checker(this.setState.bind(this));
 	}
@@ -44,6 +45,9 @@ State.prototype.setState = function () {
 	//console.log("state set to...", this.state);
 	//console.log(this.callbacks);
 	if (oldState !== this.state) this.change(this.state);
+	this.runCallbacks();
+}
+State.prototype.runCallbacks = function () {
 	while (this.callbacks.length > 0) {
 		(this.callbacks.pop())(this.state);
 	}
