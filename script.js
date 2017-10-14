@@ -33,8 +33,8 @@ RemoteProperty.prototype.setValue = function () {
 var MoreInfo = function (infoNode, buttonNode, showing, showingText, hiddenText) {
 	this.info = infoNode;
 	this.button = buttonNode;
-	this.hiddenText = hiddenText ? hiddenText: this.button.innerHTML;
-	this.showingText = showingText ? showingText: this.button.innerHTML;
+	this.hiddenText = hiddenText ? hiddenText : this.button.innerHTML;
+	this.showingText = showingText ? showingText : this.button.innerHTML;
 	this.showing = showing ? showing : false;
 	this.showing = !this.showing;
 	this.toggle();
@@ -56,6 +56,7 @@ MoreInfo.prototype.show = function () {
 var blurb = new MoreInfo(document.getElementById("guide"), document.getElementById("toggleGuide"), false, "Less Info -", "More Info +");
 
 var DomainListItem = function (domainJson) {
+	//console.log(domainJson);
 	//console.log("Making DomainListItem with ", domainJson);
 	this.domain = domainJson.domainName;
 	//this.dns = new RemoteProperty({dns: domainJson.dns, lastCheck: domainJson.dnsLastCheck});
@@ -190,8 +191,17 @@ var DomainListItem = function (domainJson) {
 		"httpLastCheck": ()=>{}
 	}
 	this.update(domainJson);
+	if (this.ping.value.lastCheck === 0) {
+		console.log("running ping update");
+		this.ping.getRemote(console.log.bind(this, "ping update ran due to 0 lastCheck"));
+	}
+	if (this.http.value.lastCheck === 0) {
+		console.log("running http update");
+		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastCheck"));
+	}
 }
 DomainListItem.prototype.formatDate = function (timestamp) {
+	if (timestamp === 0) return "Still Checking"
 	var date = new Date(timestamp);
 	return (date.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + date.getUTCMonth().toString().padStart(2, "0") + "/" + date.getUTCDate().toString().padStart(2, "0") + " " + date.getUTCHours().toString().padStart(2, "0") + ":" + date.getUTCMinutes().toString().padStart(2, "0");
 }
@@ -206,6 +216,7 @@ DomainListItem.prototype.getX = function (endpoint, callback) {
 	req.send();
 }
 DomainListItem.prototype.update = function (newJson) {
+	console.log("update called with", newJson);
 	for (var index in newJson) {
 		if (newJson[index] !== this[index]) {
 			this.updateKey[index](newJson[index]);
@@ -215,7 +226,7 @@ DomainListItem.prototype.update = function (newJson) {
 DomainListItem.prototype.colorCode = {
 	"-1": "#CDDC39",
 	"0": "#4CAF50",
-	"1": "#FF5722"
+	"1": "#FF5722",
 }
 DomainListItem.prototype.setDns = function (newDns) {
 	if (newDns !== undefined) {
@@ -343,6 +354,7 @@ DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
 }
 DomainList.prototype.addDomainItem = function (resJson) {
 	if (this.entries[resJson.domainName] === undefined) {
+		console.log(resJson);
 		//return this.findOrderedIndex(resJson);
 		var orderedIndex = this.findOrderedIndex(resJson.domainName);
 		this.orderedDomains.splice(orderedIndex, 0, resJson.domainName);

@@ -16,17 +16,19 @@ var RemoteProperty = function (domainName, checker, handler, change) {
 	/* State 0 is resolved positive position,
 	 * State 1 is resolved negative position,
 	 * State -1 is processing or undetermined state
+	 * State -2 is never process / not yet initialized state
 	 */
 	this.domainName = domainName;
 	this.checker = checker;
 	this.handler = handler;
 	this.lastCheck = 0;
-	this.state = 1;
+	this.state = -2;
 	this.callbacks = [];
 	this.change = change;
 }
 RemoteProperty.prototype.check = function (/* callbacks passed in here */) {
 	for (var ii = 0; ii < arguments.length; ii++) {
+		console.log("callback added, ", arguments[ii])
 		this.callbacks.push(arguments[ii]);
 	}
 	if (this.lastCheck >= Date.now() - 30*60*1000) this.runCallbacks();
@@ -43,6 +45,7 @@ RemoteProperty.prototype.setState = function () {
 	this.runCallbacks();
 }
 RemoteProperty.prototype.runCallbacks = function () {
+	console.log("running callbacks");
 	while (this.callbacks.length > 0) {
 		(this.callbacks.pop())(this.state);
 	}
@@ -50,6 +53,7 @@ RemoteProperty.prototype.runCallbacks = function () {
 module.exports.RemoteProperty = RemoteProperty;
 
 var Domain = function (domainName, isNew, initCallback) {
+	if (domainName === "prospectus.ed.ac.uk") console.log("started...");
 	this.domainName = domainName;
 	this.isNew = isNew;
 	this.initDone = false;
@@ -80,16 +84,21 @@ var Domain = function (domainName, isNew, initCallback) {
 		return http;
 	}, this.writeState.bind(this));
 	if (this.isNew === true) {
-		delete this.isNew;
 		this.dns.check(initCallback, this.finishInit.bind(this, "dns"));
 	} else this.readState(initCallback);
 }
 Domain.prototype.finishInit = function (e) {
-	if (this.initDone === false) this.initDone = true;
+	if (this.initDone === false) {
+		if (this.isNew === true) {
+			this.http.check();
+			this.ping.check();
+		}
+		this.initDone = true;
+	}
 }
 Domain.prototype.readState = function (callback) {
 	this.callback = callback ? callback : ()=>{};
-	fs.readFile("domains/" + this.domainName + ".txt", this.parseState.bind(this, callback));
+	fs.readFile("domains/" + this.domainName + ".txt", "utf8", this.parseState.bind(this, callback));
 }
 Domain.prototype.parseState = function (callback, err, res) {
 	if (err) return;
@@ -98,6 +107,7 @@ Domain.prototype.parseState = function (callback, err, res) {
 			var resJson = JSON.parse(res);
 			if (resJson.dns === undefined) this.dns.check(callback, this.finishInit.bind(this, "dns"));
 			else {
+				if (resJson.ping.lastCheck === 0 || resJson.http.lastCheck === 0) console.log(resJson);
 				this.ping.state = resJson.ping.state !== undefined && resJson.ping.state !== -1 ? resJson.ping.state : this.ping.state;
 				this.dns.state = resJson.dns.state !== undefined && resJson.dns.state !== -1 ? resJson.dns.state : this.dns.state;
 				this.http.state = resJson.http.state !== undefined && resJson.http.state !== -1 ? resJson.http.state : this.http.state;
@@ -109,7 +119,8 @@ Domain.prototype.parseState = function (callback, err, res) {
 				callback(this.dns.state);
 			}
 		} catch (e) {
-			return;
+			console.log(e);
+			return e;
 		}
 	}
 }
@@ -139,16 +150,20 @@ var DomainData = function (path, initCallback) {
 	this.domains = {}; 
 	this.initCallback = initCallback;
 	var domainEntries = fs.readdirSync("./domains");
+	console.log(domainEntries);
 	this.initCandidates = domainEntries.length + 1;
+	this.total = domainEntries;
 	for (var ii = 0; ii < domainEntries.length; ii++) {
 		let name = domainEntries[ii].replace(/^(.+)\.txt$/g, "$1");
 		if (name === null) this.callbackControl("initCandidate");
-		else this.addDomainCandidate(name, false, this.callbackControl.bind(this, "initCandidate"));
+		else this.addDomainCandidate(name, false, this.callbackControl.bind(this, "initCandidate", ii, name));
 	}
 	this.callbackControl("initCandidate");
 }
-DomainData.prototype.callbackControl = function (event) {
-	if (event === "initCandidate") this.initCandidates--;
+DomainData.prototype.callbackControl = function (event, index, name) {
+	if (event === "initCandidate") {
+		this.initCandidates--;
+	}
 	if (this.initCandidates === 0) this.initCallback();
 }
 DomainData.prototype.parseDomain = function (domain) {
