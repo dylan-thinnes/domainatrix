@@ -1,4 +1,4 @@
-var RemoteProperty = function (initValue, checker, parser, change, startCallback, getRemote, initCallback) {
+var RemoteProperty = function (initValue, checker, parser, change, limit, startCallback, getRemote, initCallback) {
 	this.checker = checker ? checker : ()=>{};
 	this.parser = parser ? parser : function () {return arguments};
 	this.change = change ? change : ()=>{};
@@ -7,6 +7,8 @@ var RemoteProperty = function (initValue, checker, parser, change, startCallback
 	this.value = initValue;
 	this.callbacks = [];
 	this.startCallback = startCallback ? startCallback : ()=>{};
+	this.lastCall = 0;
+	this.limit = limit ? limit : 0;
 	initCallback = initCallback ? initCallback : ()=>{};
 	if (getRemote === true) this.getRemote(initCallback);
 	else initCallback(this.value);
@@ -16,15 +18,22 @@ RemoteProperty.prototype.getRemote = function (callback) {
 		if (typeof arguments[ii] === "function") this.callbacks.push(arguments[ii]);
 	}
 	if (this.gettingRemote === false) {
-		this.gettingRemote = true;
-		this.startCallback(this.value);
-		this.checker(this.setValue.bind(this));
+		if (this.lastCall + this.limit > Date.now()) this.runCallbacks();
+		else {
+			this.lastCall = Date.now();
+			this.gettingRemote = true;
+			this.startCallback(this.value);
+			this.checker(this.setValue.bind(this));
+		}
 	}
 }
 RemoteProperty.prototype.setValue = function () {
 	var oldVar = this.value;
 	this.value = this.parser.apply(this, arguments);
 	if (this.value !== oldVar) this.change(this.value);
+	this.runCallbacks();
+}
+RemoteProperty.prototype.runCallbacks = function () {
 	while (this.callbacks.length > 0) {
 		(this.callbacks.pop())(this.value);
 	}
@@ -57,9 +66,9 @@ var blurb = new MoreInfo(document.getElementById("guide"), document.getElementBy
 
 var DomainListItem = function (domainJson) {
 	this.domain = domainJson.domainName;
-	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), this.setDns.bind(this, {state: -1}), false);
-	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), this.setPing.bind(this, {state: -1}), false);
-	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), this.setHttp.bind(this, {state: -1}), false);
+	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
+	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
+	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
 	var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
 	this.hidden = false;
 	if (match === null) {
@@ -173,7 +182,7 @@ DomainListItem.prototype.formatDate = function (timestamp) {
 	var date = new Date(timestamp);
 	return (date.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + date.getUTCMonth().toString().padStart(2, "0") + "/" + date.getUTCDate().toString().padStart(2, "0") + " " + date.getUTCHours().toString().padStart(2, "0") + ":" + date.getUTCMinutes().toString().padStart(2, "0");
 }
-DomainListItem.prototype.getX = function (endpoint, callback) {
+DomainListItem.prototype.getX = function (endpoint, callback) { 
 	var req = new XMLHttpRequest();
 	req.open("GET", endpoint + "?domain=" + this.domain);
 	req.onreadystatechange = (function (callback) {
