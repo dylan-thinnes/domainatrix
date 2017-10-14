@@ -28,7 +28,6 @@ var RemoteProperty = function (domainName, checker, handler, change) {
 }
 RemoteProperty.prototype.check = function (/* callbacks passed in here */) {
 	for (var ii = 0; ii < arguments.length; ii++) {
-		console.log("callback added, ", arguments[ii])
 		this.callbacks.push(arguments[ii]);
 	}
 	if (this.lastCheck >= Date.now() - 30*60*1000) this.runCallbacks();
@@ -45,7 +44,6 @@ RemoteProperty.prototype.setState = function () {
 	this.runCallbacks();
 }
 RemoteProperty.prototype.runCallbacks = function () {
-	console.log("running callbacks");
 	while (this.callbacks.length > 0) {
 		(this.callbacks.pop())(this.state);
 	}
@@ -53,7 +51,6 @@ RemoteProperty.prototype.runCallbacks = function () {
 module.exports.RemoteProperty = RemoteProperty;
 
 var Domain = function (domainName, isNew, initCallback) {
-	if (domainName === "prospectus.ed.ac.uk") console.log("started...");
 	this.domainName = domainName;
 	this.isNew = isNew;
 	this.initDone = false;
@@ -107,7 +104,6 @@ Domain.prototype.parseState = function (callback, err, res) {
 			var resJson = JSON.parse(res);
 			if (resJson.dns === undefined) this.dns.check(callback, this.finishInit.bind(this, "dns"));
 			else {
-				if (resJson.ping.lastCheck === 0 || resJson.http.lastCheck === 0) console.log(resJson);
 				this.ping.state = resJson.ping.state !== undefined && resJson.ping.state !== -1 ? resJson.ping.state : this.ping.state;
 				this.dns.state = resJson.dns.state !== undefined && resJson.dns.state !== -1 ? resJson.dns.state : this.dns.state;
 				this.http.state = resJson.http.state !== undefined && resJson.http.state !== -1 ? resJson.http.state : this.http.state;
@@ -150,7 +146,7 @@ var DomainData = function (path, initCallback) {
 	this.domains = {}; 
 	this.initCallback = initCallback;
 	var domainEntries = fs.readdirSync("./domains");
-	console.log(domainEntries);
+	//console.log(domainEntries);
 	this.initCandidates = domainEntries.length + 1;
 	this.total = domainEntries;
 	for (var ii = 0; ii < domainEntries.length; ii++) {
