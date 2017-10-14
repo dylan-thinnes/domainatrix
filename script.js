@@ -56,33 +56,11 @@ MoreInfo.prototype.show = function () {
 var blurb = new MoreInfo(document.getElementById("guide"), document.getElementById("toggleGuide"), false, "Less Info -", "More Info +");
 
 var DomainListItem = function (domainJson) {
-	//console.log(domainJson);
-	//console.log("Making DomainListItem with ", domainJson);
 	this.domain = domainJson.domainName;
-	//this.dns = new RemoteProperty({dns: domainJson.dns, lastCheck: domainJson.dnsLastCheck});
-	/*this.dns = {
-		state: domainJson.dns,
-		lastCheck: domainJson.dnsLastCheck
-	}
-	this.ping = {
-		state: domainJson.ping,
-		lastCheck: domainJson.pingLastCheck
-	}
-	this.http = {
-		state: domainJson.http,
-		lastCheck: domainJson.httpLastCheck
-	}*/
 	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), this.setDns.bind(this, {state: -1}), false);
 	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), this.setPing.bind(this, {state: -1}), false);
 	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), this.setHttp.bind(this, {state: -1}), false);
-	/*this.pingLastCheck = domainJson.pingLastCheck;
-	this.dnsLastCheck = domainJson.dnsLastCheck;
-	this.httpLastCheck = domainJson.httpLastCheck;
-	this.ping = domainJson.ping;
-	this.dns = domainJson.dns;
-	this.http = domainJson.http;*/
 	var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
-	//console.log(match);
 	this.hidden = false;
 	if (match === null) {
 		this.hide();
@@ -120,10 +98,6 @@ var DomainListItem = function (domainJson) {
 		this.nodes.suffix.appendChild(document.createTextNode("ed.ac.uk"));
 		this.nodes.domainName.appendChild(this.nodes.prefix);
 		this.nodes.domainName.appendChild(this.nodes.suffix);
-
-		/*this.setDns();
-		this.setPing();
-		this.setHttp();*/
 
 		this.nodes.title.appendChild(this.nodes.dns);
 		this.nodes.title.appendChild(this.nodes.ping);
@@ -176,10 +150,6 @@ var DomainListItem = function (domainJson) {
 		this.nodes.info.appendChild(this.nodes.dnsRow);
 		this.nodes.info.appendChild(this.nodes.pingRow);
 		this.nodes.info.appendChild(this.nodes.httpRow);
-		/*this.nodes.pingLastCheck = document.createElement("div");
-		this.nodes.pingLastCheck.className = "domainPingLastCheck";
-		var pingDate = new Date(this.ping.lastCheck);
-		this.nodes.pingLastCheck.appendChild(document.createTextNode((pingDate.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + pingDate.getUTCMonth().toString().padStart(2, "0") + "/" + pingDate.getUTCDate().toString().padStart(2, "0") + " " + pingDate.getUTCHours().toString().padStart(2, "0") + ":" + pingDate.getUTCMinutes().toString().padStart(2, "0")));*/
 	}
 	this.updateKey = {
 		"domainName": ()=>{},
@@ -192,11 +162,9 @@ var DomainListItem = function (domainJson) {
 	}
 	this.update(domainJson);
 	if (this.ping.value.lastCheck === 0) {
-		console.log("running ping update");
 		this.ping.getRemote(console.log.bind(this, "ping update ran due to 0 lastCheck"));
 	}
 	if (this.http.value.lastCheck === 0) {
-		console.log("running http update");
 		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastCheck"));
 	}
 }
@@ -216,7 +184,6 @@ DomainListItem.prototype.getX = function (endpoint, callback) {
 	req.send();
 }
 DomainListItem.prototype.update = function (newJson) {
-	console.log("update called with", newJson);
 	for (var index in newJson) {
 		if (newJson[index] !== this[index]) {
 			this.updateKey[index](newJson[index]);
@@ -233,8 +200,6 @@ DomainListItem.prototype.setDns = function (newDns) {
 		this.dns.value.state = newDns.state !== undefined ? newDns.state : this.dns.value.state;
 		this.dns.value.lastCheck = newDns.lastCheck !== undefined ? newDns.lastCheck : this.dns.value.lastCheck;
 	}
-	/*if (this.dns === 0) this.dnsNode.style.backgroundColor = "#4CAf50";
-	else this.dnsNode.style.backgroundColor = "#FF5722";*/
 	this.nodes.dns.style.backgroundColor = this.colorCode[this.dns.value.state];
 	this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.value.lastCheck);
 }
@@ -243,8 +208,6 @@ DomainListItem.prototype.setPing = function (newPing) {
 		this.ping.value.state = newPing.state !== undefined ? newPing.state : this.ping.value.state;
 		this.ping.value.lastCheck = newPing.lastCheck !== undefined ? newPing.lastCheck : this.ping.value.lastCheck;
 	}
-	/*if (this.ping === 0) this.pingNode.style.backgroundColor = "#4CAf50";
-	else this.pingNode.style.backgroundColor = "#FF5722";*/
 	this.nodes.ping.style.backgroundColor = this.colorCode[this.ping.value.state];
 	this.nodes.pingLastCheck.innerHTML = "Ping Last Checked: " + this.formatDate(this.ping.value.lastCheck);
 }
@@ -253,8 +216,6 @@ DomainListItem.prototype.setHttp = function (newHttp) {
 		this.http.value.state = newHttp.state !== undefined ? newHttp.state : this.http.value.state;
 		this.http.value.lastCheck = newHttp.lastCheck !== undefined ? newHttp.lastCheck : this.http.value.lastCheck;
 	}
-	/*if (this.http === 0) this.httpNode.style.backgroundColor = "#4CAf50";
-	else this.httpNode.style.backgroundColor = "#FF5722";*/
 	this.nodes.http.style.backgroundColor = this.colorCode[this.http.value.state];
 	this.nodes.httpLastCheck.innerHTML = "HTTP Last Checked: " + this.formatDate(this.http.value.lastCheck);
 }
@@ -334,9 +295,7 @@ DomainList.prototype.setState = function (state) {
 	this.feedback.setState(state);
 }
 DomainList.prototype.handleInputKeys = function (e) {
-	//console.log(e, this.inputNode.value);
 	if (e.keyCode === 13) {
-		//console.log("domains being sent");
 		e.preventDefault();
 		this.askDomain(this.inputNode.value);
 	}
@@ -346,7 +305,6 @@ DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
 	subsetRight = subsetRight !== undefined ? subsetRight : this.orderedDomains.length;
 	while (subsetLeft !== subsetRight) {
 		var checkDomain = this.orderedDomains[subsetLeft + Math.floor((subsetRight - subsetLeft) / 2)];
-		//console.log("checkDomain: ", checkDomain, subsetLeft, subsetRight, checkDomain > domain);
 		if (checkDomain > domain) subsetRight = subsetLeft + Math.floor((subsetRight - subsetLeft) / 2);
 		else subsetLeft = subsetRight - Math.floor((subsetRight - subsetLeft) / 2);
 	}
@@ -354,12 +312,9 @@ DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
 }
 DomainList.prototype.addDomainItem = function (resJson) {
 	if (this.entries[resJson.domainName] === undefined) {
-		console.log(resJson);
-		//return this.findOrderedIndex(resJson);
 		var orderedIndex = this.findOrderedIndex(resJson.domainName);
 		this.orderedDomains.splice(orderedIndex, 0, resJson.domainName);
 		this.entries[resJson.domainName] = new DomainListItem(resJson);
-		//console.log(orderedIndex, resJson, this.entries, this.orderedDomains);
 		if (this.node.children.length === 0) {
 			this.node.appendChild(this.entries[resJson.domainName].nodes.root);
 		} else if (orderedIndex === this.node.children.length) {
@@ -394,7 +349,6 @@ DomainList.prototype.getRemoteDomains = function () {
 		req.open("GET", "/data");
 		req.onreadystatechange = (function (req) {
 			if (req.readyState === 4) {
-				//console.log(req.response);
 				this.setRemoteDomains(req.response);
 			}
 		}).bind(this, req);
@@ -422,17 +376,14 @@ DomainList.prototype.serverResponseControl = function (res) {
 		var resJson = JSON.parse(res);
 		this.setState(resJson.state);
 		if (resJson.state === 0) {
-			//console.log("Domain was accepted.");
 			this.addDomainItem(resJson.data);
 		} else {
-			//console.log("Domain was not accepted.");
 		}
 	} catch (e) {
-		//console.log(e, "Illegitimate output from server on /add endpoint.");
+		console.log(e, "Illegitimate output from server on /add endpoint.");
 	}
 }
 DomainList.prototype.searchDomainItems = function (e) {
-	//console.log(e, this.search, new RegExp(this.search));
 	if (this.search === "") {
 		var entriesExist = 0;
 		var entriesShown = 0;
@@ -451,7 +402,6 @@ DomainList.prototype.searchDomainItems = function (e) {
 		var entriesExist = 0;
 		var entriesShown = 0;
 		for (var domain in this.entries) {
-			//console.log(domain);
 			if (this.entries[domain].domain.match(regex) !== null) {
 				this.entries[domain].show();
 				entriesShown++;
