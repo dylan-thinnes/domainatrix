@@ -42,6 +42,8 @@ RemoteProperty.prototype.runCallbacks = function () {
 var MoreInfo = function (infoNode, buttonNode, showing, showingText, hiddenText) {
 	this.info = infoNode;
 	this.button = buttonNode;
+	if (showingText === undefined && hiddenText === undefined) this.useText = false;
+	else this.useText = true;
 	this.hiddenText = hiddenText ? hiddenText : this.button.innerHTML;
 	this.showingText = showingText ? showingText : this.button.innerHTML;
 	this.showing = showing ? showing : false;
@@ -56,31 +58,31 @@ MoreInfo.prototype.toggle = function () {
 }
 MoreInfo.prototype.hide = function () {
 	this.info.style.display = "none";
-	this.button.innerHTML = this.hiddenText;
+	if (this.useText === true) this.button.innerHTML = this.hiddenText;
 }
 MoreInfo.prototype.show = function () {
 	this.info.style.display = "initial";
-	this.button.innerHTML = this.showingText;
+	if (this.useText === true) this.button.innerHTML = this.showingText;
 }
-var blurb = new MoreInfo(document.getElementById("guide"), document.getElementById("toggleGuide"), false, "Less Info -", "More Info +");
+var blurb = new MoreInfo(document.getElementById("guide"), document.getElementById("toggleGuide"), false, "What is this? / More Info -", "What is this? / More Info +");
 
 var DomainListItem = function (domainJson) {
 	this.domain = domainJson.domainName;
 	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
 	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
 	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
-	var match = this.domain.match(/([^\s]+\.|)ed\.ac\.uk$/);
+	var match = this.domain.match(/(([^\s]+)\.|)ed\.ac\.uk$/);
 	this.hidden = false;
 	if (match === null) {
 		this.hide();
 		this.show = this.hide;
 	} else {
+		this.subdomain = match[2];
 		this.nodes = {};
-		this.subdomain = match[1];
 		this.nodes.root = document.createElement("div");
 		this.nodes.root.className = "domainListItem";
 
-		this.nodes.title = document.createElement("div");
+		this.nodes.title = document.createElement("a");
 		this.nodes.title.className = "domainTitle";
 		this.nodes.root.appendChild(this.nodes.title);
 
@@ -90,41 +92,36 @@ var DomainListItem = function (domainJson) {
 		this.nodes.ping.className = "domainPing";
 		this.nodes.http = document.createElement("div");
 		this.nodes.http.className = "domainHttp";
-		this.nodes.toggleMoreInfo = document.createElement("a");
-		this.nodes.toggleMoreInfo.className = "toggleMoreInfo";
 		this.nodes.tableSpacer = document.createElement("div");
 		this.nodes.tableSpacer.className = "domainTableSpacer";
 		this.nodes.domainName = document.createElement("div");
 		this.nodes.domainName.className = "domainName";
 
-		this.nodes.prefix = document.createElement("a");
-		this.nodes.prefix.className = "domainPrefix"
-		this.nodes.prefix.href = "http://" + this.domain;
-		this.nodes.prefix.appendChild(document.createTextNode(this.subdomain));
-		this.nodes.suffix = document.createElement("a");
-		this.nodes.suffix.className = "domainSuffix"
-		this.nodes.suffix.href = "http://" + this.domain;
-		this.nodes.suffix.appendChild(document.createTextNode("ed.ac.uk"));
+		this.nodes.prefix = document.createElement("span");
+		this.nodes.prefix.className = "domainPrefix";
+		//this.nodes.prefix.href = "http://" + this.domain;
+		if (this.subdomain === undefined) {
+			this.nodes.prefix.appendChild(document.createTextNode("(ed.ac.uk)"));
+			this.nodes.prefix.style.color = "#999999";
+		} else this.nodes.prefix.appendChild(document.createTextNode(this.subdomain));
 		this.nodes.domainName.appendChild(this.nodes.prefix);
-		this.nodes.domainName.appendChild(this.nodes.suffix);
 
 		this.nodes.title.appendChild(this.nodes.dns);
 		this.nodes.title.appendChild(this.nodes.ping);
 		this.nodes.title.appendChild(this.nodes.http);
-		this.nodes.title.appendChild(this.nodes.toggleMoreInfo);
 		this.nodes.title.appendChild(this.nodes.tableSpacer);
 		this.nodes.title.appendChild(this.nodes.domainName);
 
 		this.nodes.info = document.createElement("div");
 		this.nodes.info.className = "domainInfo moreInfo";
-		this.moreInfo = new MoreInfo(this.nodes.info, this.nodes.toggleMoreInfo, false, "Less Data & Actions -", "More Data & Actions +")
+		this.moreInfo = new MoreInfo(this.nodes.info, this.nodes.title, false);
 		this.nodes.root.appendChild(this.nodes.info);
 
 		this.nodes.dnsRow = document.createElement("div");
 		this.nodes.dnsRow.className = "domainInfoRow";
 		this.nodes.updateDns = document.createElement("div");
 		this.nodes.updateDns.className = "button domainInfoGet";
-		this.nodes.updateDns.appendChild(document.createTextNode("Recheck DNS"));
+		this.nodes.updateDns.appendChild(document.createTextNode("Recheck"));
 		this.nodes.updateDns.addEventListener("click", this.dns.getRemote.bind(this.dns, ()=>{}));
 		this.nodes.dnsLastCheck = document.createElement("div");
 		this.nodes.dnsLastCheck.className = "lastCheck";
@@ -136,7 +133,7 @@ var DomainListItem = function (domainJson) {
 		this.nodes.pingRow.className = "domainInfoRow";
 		this.nodes.updatePing = document.createElement("div");
 		this.nodes.updatePing.className = "button domainInfoGet";
-		this.nodes.updatePing.appendChild(document.createTextNode("Recheck Ping"));
+		this.nodes.updatePing.appendChild(document.createTextNode("Recheck"));
 		this.nodes.updatePing.addEventListener("click", this.ping.getRemote.bind(this.ping, ()=>{}));
 		this.nodes.pingLastCheck = document.createElement("div");
 		this.nodes.pingLastCheck.className = "lastCheck";
@@ -148,7 +145,7 @@ var DomainListItem = function (domainJson) {
 		this.nodes.httpRow.className = "domainInfoRow";
 		this.nodes.updateHttp = document.createElement("div");
 		this.nodes.updateHttp.className = "button domainInfoGet";
-		this.nodes.updateHttp.appendChild(document.createTextNode("Recheck HTTP"));
+		this.nodes.updateHttp.appendChild(document.createTextNode("Recheck"));
 		this.nodes.updateHttp.addEventListener("click", this.http.getRemote.bind(this.http, ()=>{}));
 		this.nodes.httpLastCheck = document.createElement("div");
 		this.nodes.httpLastCheck.className = "lastCheck";
