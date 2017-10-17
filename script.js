@@ -417,7 +417,7 @@ DomainList.prototype.searchDomainItems = function (e) {
 		var entriesExist = 0;
 		var entriesShown = 0;
 		for (var domain in this.entries) {
-			if (this.entries[domain].domain.match(regex) !== null) {
+			if (this.entries[domain].subdomain.match(regex) !== null) {
 				this.entries[domain].show();
 				entriesShown++;
 			} else this.entries[domain].hide();
