@@ -1,5 +1,6 @@
 const dns = require('dns');
 const http = require('http');
+const ping = require('ping');
 const fs = require('fs');
 const RemoteProperty = require('./remoteproperty');
 
