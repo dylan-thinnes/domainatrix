@@ -1,1 +1,1 @@
-{"domainName":"diydice.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928369},"ping":{"state":1,"lastCheck":1507603971957},"http":{"state":1,"lastCheck":1507603982030}}
+{"domainName":"diydice.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1508208063778},"ping":{"state":1,"lastCheck":1507603971957},"http":{"state":1,"lastCheck":1508208074756}}
