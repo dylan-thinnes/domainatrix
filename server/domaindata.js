@@ -29,34 +29,34 @@ class DomainData {
 
 	getXFromDomain(x, domain, callback) {
 		if (this.domains[domain] !== undefined) this.domains[domain][x].check(this.writeXFromDomain.bind(this, x, domain, callback));
-		else callback(JSON.stringify({"state": 2}));
+		else callback({"state": 2});
 	}
 	writeXFromDomain(x, domain, callback, state) {
 		var res = {};
 		res[x] = {};
 		res[x]["state"] = state;
 		res[x]["lastCheck"] = this.domains[domain][x].lastCheck
-		callback(JSON.stringify(res));
+		callback(res);
 	}
 
 	addDomainCandidate(domain, isNew, callback) {
 		var parsedDomain = this.parseDomain(domain);
 		if (parsedDomain !== null) {
-			if (this.domains[domain] !== undefined) callback(JSON.stringify({"state": 1}));
+			if (this.domains[domain] !== undefined) callback({"state": 1});
 			else {
 				var subDomain = parsedDomain[1];
 				this.domains[domain] = new Domain(domain, isNew, this.parseCandidate.bind(this, domain, callback));
 			}
-		} else callback(JSON.stringify({"state": 3}));
+		} else callback({"state": 3});
 	}
 	parseCandidate(domain, callback, dns) {
 		if (dns !== 0) {
 			delete this.domains[domain];
-			callback(JSON.stringify({"state": 2}));
+			callback({"state": 2});
 		} else {
 			/*this.domains[domain].checkPing();
 			this.domains[domain].checkHttp();*/
-			callback(JSON.stringify({"state": 0, "data": this.domains[domain].toJson()}));
+			callback({"state": 0, "data": this.domains[domain].toJson()});
 		}
 	}
 	getJson (){
@@ -67,7 +67,7 @@ class DomainData {
 			if (this.domains[index].initDone === false) continue;
 			res.push(this.domains[index].toJson());
 		}
-		return JSON.stringify(res);
+		return res;
 	}
 }
 exports = module.exports = DomainData;
