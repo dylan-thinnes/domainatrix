@@ -417,7 +417,9 @@ DomainList.prototype.searchDomainItems = function (e) {
 		var entriesExist = 0;
 		var entriesShown = 0;
 		for (var domain in this.entries) {
-			if (this.entries[domain].subdomain.match(regex) !== null) {
+			var subdomain = this.entries[domain].domain === "ed.ac.uk" ? "ed.ac.uk" : this.entries[domain].subdomain;
+			if (subdomain === undefined) continue;
+			if (subdomain.match(regex) !== null) {
 				this.entries[domain].show();
 				entriesShown++;
 			} else this.entries[domain].hide();
