@@ -1,0 +1,23 @@
+{
+  "name": "domainatrix",
+  "version": "1.0.0",
+  "description": "UoE dns service crawler",
+  "main": "index.js",
+  "dependencies": {
+    "ping": "^0.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dylan-thinnes/domainatrix.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dylan-thinnes/domainatrix/issues"
+  },
+  "homepage": "https://github.com/dylan-thinnes/domainatrix#readme"
+}
