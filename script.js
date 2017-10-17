@@ -153,9 +153,18 @@ var DomainListItem = function (domainJson) {
 		this.nodes.httpRow.appendChild(this.nodes.updateHttp);
 		this.nodes.httpRow.appendChild(this.nodes.httpLastCheck);
 
+		this.nodes.goToDomainRow = document.createElement("div");
+		this.nodes.goToDomainRow.className = "domainInfoRow";
+		this.nodes.goToDomain = document.createElement("a");
+		this.nodes.goToDomain.className = "button domainInfoGet goToDomain";
+		this.nodes.goToDomain.href = "http://" + this.domain;
+		this.nodes.goToDomain.appendChild(document.createTextNode("Go To This Domain"));
+		this.nodes.goToDomainRow.appendChild(this.nodes.goToDomain);
+
 		this.nodes.info.appendChild(this.nodes.dnsRow);
 		this.nodes.info.appendChild(this.nodes.pingRow);
 		this.nodes.info.appendChild(this.nodes.httpRow);
+		this.nodes.info.appendChild(this.nodes.goToDomainRow);
 	}
 	this.updateKey = {
 		"domainName": ()=>{},
