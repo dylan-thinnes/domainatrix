@@ -15,7 +15,7 @@ const makeRoutes = () => {
 		// domData returns everything as a string. for ease of use i'm just converting it right back to json and letting express automatically add the json headers/everything else
 		
 		app.get('/add', (req, res) => {
-			domData.addDomainCandidate(req.query.domain, r => {
+			domData.addDomainCandidate(req.query.domain, true, r => {
 				res.json(JSON.parse(r)); // temporary until DomainData is patched to return an object
 			});
 		});
