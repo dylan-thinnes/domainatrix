@@ -2,13 +2,15 @@ const dns = require('dns');
 const http = require('http');
 const ping = require('ping');
 const fs = require('fs');
+const sqlite3 = require('sqlite3');
 const RemoteProperty = require('./remoteproperty');
 
 class Domain {
-	constructor (domainName, isNew, initCallback) {
+	constructor (domainName, isNew, initCallback, db, data) {
 		this.domainName = domainName;
 		this.isNew = isNew;
 		this.initDone = false;
+		this.db = db;
 		this.dns = new RemoteProperty(this.domainName, function (callback) {
 			dns.lookup(this.domainName, callback.bind(this));
 		}, function (err, res) {
@@ -37,7 +39,10 @@ class Domain {
 		}, this.writeState.bind(this));
 		if (this.isNew === true) {
 			this.dns.check(initCallback, this.finishInit.bind(this, "dns"));
-		} else this.readState(initCallback);
+		} else {
+			//this.parseState(initCallback, undefined, data);
+			//this.readState(initCallback);
+		}
 	}
 	finishInit () {
 		if (this.initDone === false) {
@@ -57,23 +62,17 @@ class Domain {
 	parseState (callback, err, res) {
 		if (err) return;
 		else {
-			try {
-				var resJson = JSON.parse(res);
-				if (resJson.dns === undefined) this.dns.check(callback, this.finishInit.bind(this, "dns"));
-				else {
-					this.ping.state = resJson.ping.state !== undefined && resJson.ping.state !== -1 ? resJson.ping.state : this.ping.state;
-					this.dns.state = resJson.dns.state !== undefined && resJson.dns.state !== -1 ? resJson.dns.state : this.dns.state;
-					this.http.state = resJson.http.state !== undefined && resJson.http.state !== -1 ? resJson.http.state : this.http.state;
-					this.ping.lastCheck = resJson.ping.lastCheck !== undefined ? resJson.ping.lastCheck : this.ping.lastCheck;
-					this.dns.lastCheck = resJson.dns.lastCheck !== undefined ? resJson.dns.lastCheck : this.dns.lastCheck;
-					this.http.lastCheck = resJson.http.lastCheck !== undefined ? resJson.http.lastCheck : this.http.lastCheck;
-					this.finishInit("dns");
-					//this.writeState();
-					callback(this.dns.state);
-				}
-			} catch (e) {
-				console.log(e);
-				return e;
+			if (res.dns === undefined) this.dns.check(callback, this.finishInit.bind(this, "dns"));
+			else {
+				this.ping.state = res.ping !== undefined && res.ping !== -1 ? res.ping : this.ping.state;
+				this.dns.state = res.dns !== undefined && res.dns !== -1 ? res.dns : this.dns.state;
+				this.http.state = res.http !== undefined && res.http !== -1 ? res.http : this.http.state;
+				this.ping.lastCheck = res.pingLastCheck !== undefined ? res.pingLastCheck : this.ping.lastCheck;
+				this.dns.lastCheck = res.dnsLastCheck !== undefined ? res.dnsLastCheck : this.dns.lastCheck;
+				this.http.lastCheck = res.httpLastCheck !== undefined ? res.httpLastCheck : this.http.lastCheck;
+				this.finishInit("dns");
+				//this.writeState();
+				callback(this.dns.state);
 			}
 		}
 	}
@@ -95,8 +94,22 @@ class Domain {
 			}
 		}
 	}
+	toDb () {
+		return {
+			$domainName: this.domainName,
+			$dns: this.dns.state,
+		    $ping: this.ping.state,
+			$http: this.http.state,
+			$dnsLastCheck: this.dns.lastCheck,
+		    $pingLastCheck: this.ping.lastCheck,
+			$httpLastCheck: this.http.lastCheck
+		}
+	}
 	writeState () {
-		fs.writeFile("domains/" + this.domainName + ".txt", JSON.stringify(this.toJson()), () => {});
+		//console.log(this.toDb());
+		//this.db.run("INSERT INTO domains VALUES ($domainName, $dns, $dnsLastCheck, $ping, $pingLastCheck, $http, $httpLastCheck)", this.toDb());
+		this.db.run("UPDATE domains SET dns = $dns, dnsLastCheck = $dnsLastCheck, ping = $ping, pingLastCheck = $pingLastCheck, http = $http, httpLastCheck = $httpLastCheck WHERE domainName = $domainName", this.toDb());
+		//fs.writeFile("domains/" + this.domainName + ".txt", JSON.stringify(this.toJson()), () => {});
 	}
 }
 exports = module.exports = Domain;

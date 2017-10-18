@@ -12,7 +12,7 @@ const makeRoutes = () => {
 		});
 	}).then(domData => {
 		app.get('/add', (req, res) => {
-			domData.addDomainCandidate(req.query.domain, r => {
+			domData.addDomainCandidate(req.query.domain, true, r => {
 				res.json(r);
 			});
 		});
