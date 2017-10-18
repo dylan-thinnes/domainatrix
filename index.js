@@ -13,5 +13,5 @@ routes.makeRoutes().then(subapp => {
 		res.send('');
 	});
 
-	app.listen(8080);
+	app.listen(80);
 })
