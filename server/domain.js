@@ -62,24 +62,19 @@ class Domain {
 	parseState (callback, err, res) {
 		if (err) return;
 		else {
-			try {
-				var resJson = res;
-				console.log(res);
-				if (resJson.dns === undefined) this.dns.check(callback, this.finishInit.bind(this, "dns"));
-				else {
-					this.ping.state = resJson.ping !== undefined && resJson.ping !== -1 ? resJson.ping : this.ping.state;
-					this.dns.state = resJson.dns !== undefined && resJson.dns !== -1 ? resJson.dns : this.dns.state;
-					this.http.state = resJson.http !== undefined && resJson.http !== -1 ? resJson.http : this.http.state;
-					this.ping.lastCheck = resJson.pingLastCheck !== undefined ? resJson.pingLastCheck : this.ping.lastCheck;
-					this.dns.lastCheck = resJson.dnsLastCheck !== undefined ? resJson.dnsLastCheck : this.dns.lastCheck;
-					this.http.lastCheck = resJson.httpLastCheck !== undefined ? resJson.httpLastCheck : this.http.lastCheck;
-					this.finishInit("dns");
-					//this.writeState();
-					callback(this.dns.state);
-				}
-			} catch (e) {
-				console.log(e);
-				return e;
+			var resJson = res;
+			console.log(res);
+			if (resJson.dns === undefined) this.dns.check(callback, this.finishInit.bind(this, "dns"));
+			else {
+				this.ping.state = resJson.ping !== undefined && resJson.ping !== -1 ? resJson.ping : this.ping.state;
+				this.dns.state = resJson.dns !== undefined && resJson.dns !== -1 ? resJson.dns : this.dns.state;
+				this.http.state = resJson.http !== undefined && resJson.http !== -1 ? resJson.http : this.http.state;
+				this.ping.lastCheck = resJson.pingLastCheck !== undefined ? resJson.pingLastCheck : this.ping.lastCheck;
+				this.dns.lastCheck = resJson.dnsLastCheck !== undefined ? resJson.dnsLastCheck : this.dns.lastCheck;
+				this.http.lastCheck = resJson.httpLastCheck !== undefined ? resJson.httpLastCheck : this.http.lastCheck;
+				this.finishInit("dns");
+				//this.writeState();
+				callback(this.dns.state);
 			}
 		}
 	}
