@@ -1,7 +1,6 @@
 const dns = require('dns');
 const http = require('http');
 const ping = require('ping');
-const sqlite3 = require('sqlite3');
 const RemoteProperty = require('./remoteproperty');
 
 class Domain {

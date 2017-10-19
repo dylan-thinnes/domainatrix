@@ -7,9 +7,7 @@ const makeRoutes = () => {
 	// TODO: the internal structure of DomainData's "callback control" mechanism makes this janky
 	// wrapping in a promise is a temporary (but effective) solution
 	return new Promise((resolve, reject) => {
-		const domData = new DomainData("domains.txt", () => {
-				resolve(domData);
-		});
+		const domData = new DomainData(resolve.bind(this));
 	}).then(domData => {
 		app.get('/add', (req, res) => {
 			domData.addDomainCandidate(req.query.domain, true, r => {

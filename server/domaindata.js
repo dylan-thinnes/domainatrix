@@ -1,13 +1,11 @@
-const fs = require('fs');
 const sqlite3 = require('sqlite3');
 const Domain = require('./domain');
 
 class DomainData {
 	
-	constructor (path, initCallback) {
+	constructor (resolve, reject) {
 		this.domains = {}; 
-		this.initCallback = initCallback;
-		var domainEntries = fs.readdirSync("./domains");
+		this.initCallback = resolve;
 		this.db = new sqlite3.Database("app.db");
 		this.db.exec(`CREATE TABLE IF NOT EXISTS domains (
 			domainName TEXT PRIMARY KEY,
@@ -32,7 +30,7 @@ class DomainData {
 			this.initCandidates--;
 		}
 		if (this.initCandidates === 0) {
-			this.initCallback();
+			this.initCallback(this);
 		}
 	}
 	parseDomain(domain) {
