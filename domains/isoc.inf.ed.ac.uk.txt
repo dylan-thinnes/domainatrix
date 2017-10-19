@@ -1,1 +1,0 @@
-{"domainName":"isoc.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928380},"ping":{"state":1,"lastCheck":1507604091538},"http":{"state":0,"lastCheck":1507604091612}}

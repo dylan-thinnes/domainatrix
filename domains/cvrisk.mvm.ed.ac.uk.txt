@@ -1,1 +1,0 @@
-{"domainName":"cvrisk.mvm.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928372},"ping":{"state":0,"lastCheck":1507603967663},"http":{"state":0,"lastCheck":1507603967715}}

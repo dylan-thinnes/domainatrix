@@ -1,1 +1,0 @@
-{"domainName":"issrt.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928379},"ping":{"state":1,"lastCheck":1507604093663},"http":{"state":0,"lastCheck":1507604093721}}

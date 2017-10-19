@@ -1,1 +1,0 @@
-{"domainName":"wcms.lfcs.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928546},"ping":{"state":1,"lastCheck":1507604316600},"http":{"state":0,"lastCheck":1507604316802}}

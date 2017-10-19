@@ -1,1 +1,0 @@
-{"domainName":"www.lel.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928683},"ping":{"state":0,"lastCheck":1507604417315},"http":{"state":0,"lastCheck":1507604417356}}

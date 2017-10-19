@@ -1,1 +1,0 @@
-{"domainName":"webprint.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928560},"ping":{"state":1,"lastCheck":1507604325873},"http":{"state":1,"lastCheck":1507604335945}}

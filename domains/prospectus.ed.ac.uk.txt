@@ -1,1 +1,0 @@
-{"domainName":"prospectus.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928444},"ping":{"state":1,"lastCheck":1507604201447},"http":{"state":0,"lastCheck":1507604201526}}

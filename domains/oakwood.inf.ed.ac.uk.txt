@@ -1,1 +1,0 @@
-{"domainName":"oakwood.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928409},"ping":{"state":1,"lastCheck":1507604174002},"http":{"state":0,"lastCheck":1507604174052}}

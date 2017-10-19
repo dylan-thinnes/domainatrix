@@ -1,1 +1,0 @@
-{"domainName":"www.studenthomes.accom.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928725},"ping":{"state":1,"lastCheck":1507604430293},"http":{"state":0,"lastCheck":1507604430359}}

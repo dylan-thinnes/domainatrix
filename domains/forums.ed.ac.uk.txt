@@ -1,1 +1,0 @@
-{"domainName":"forums.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928374},"ping":{"state":0,"lastCheck":1507604013722},"http":{"state":0,"lastCheck":1507604013765}}

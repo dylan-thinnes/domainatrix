@@ -1,1 +1,0 @@
-{"domainName":"sip.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928504},"ping":{"state":1,"lastCheck":1507604263114},"http":{"state":1,"lastCheck":1507604263213}}

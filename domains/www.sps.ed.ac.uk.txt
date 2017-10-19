@@ -1,1 +1,0 @@
-{"domainName":"www.sps.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928717},"ping":{"state":0,"lastCheck":1507604426677},"http":{"state":0,"lastCheck":1507604427938}}

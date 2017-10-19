@@ -1,1 +1,0 @@
-{"domainName":"wp.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928600},"ping":{"state":1,"lastCheck":1507604369946},"http":{"state":0,"lastCheck":1507604370155}}

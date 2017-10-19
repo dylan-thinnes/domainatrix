@@ -1,1 +1,0 @@
-{"domainName":"calvin.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928364},"ping":{"state":1,"lastCheck":1507603958521},"http":{"state":0,"lastCheck":1507603958647}}

@@ -1,1 +1,0 @@
-{"domainName":"bugzilla.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928364},"ping":{"state":1,"lastCheck":1507603954278},"http":{"state":0,"lastCheck":1507603954351}}

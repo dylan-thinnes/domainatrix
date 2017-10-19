@@ -1,1 +1,0 @@
-{"domainName":"www.docs.csg.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928631},"ping":{"state":0,"lastCheck":1507604402132},"http":{"state":0,"lastCheck":1507604402188}}

@@ -1,1 +1,0 @@
-{"domainName":"www2.ph.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928737},"ping":{"state":1,"lastCheck":1507604433671},"http":{"state":0,"lastCheck":1507604441296}}

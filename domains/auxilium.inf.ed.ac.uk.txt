@@ -1,1 +1,0 @@
-{"domainName":"auxilium.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928362},"ping":{"state":1,"lastCheck":1507603899287},"http":{"state":1,"lastCheck":1507603909332}}

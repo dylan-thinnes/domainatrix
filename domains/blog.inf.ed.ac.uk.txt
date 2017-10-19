@@ -1,1 +1,0 @@
-{"domainName":"blog.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928363},"ping":{"state":1,"lastCheck":1507603952044},"http":{"state":0,"lastCheck":1507603952202}}

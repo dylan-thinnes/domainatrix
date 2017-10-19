@@ -1,1 +1,0 @@
-{"domainName":"www.dice.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928637},"ping":{"state":1,"lastCheck":1507604401526},"http":{"state":0,"lastCheck":1507604402067}}

@@ -1,1 +1,0 @@
-{"domainName":"select.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928493},"ping":{"state":1,"lastCheck":1507604260996},"http":{"state":0,"lastCheck":1507604261044}}

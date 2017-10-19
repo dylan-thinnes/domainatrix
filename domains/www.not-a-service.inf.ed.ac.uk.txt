@@ -1,1 +1,0 @@
-{"domainName":"www.not-a-service.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928705},"ping":{"state":1,"lastCheck":1507604423862},"http":{"state":0,"lastCheck":1507604424317}}

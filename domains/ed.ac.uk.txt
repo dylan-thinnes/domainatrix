@@ -1,1 +1,0 @@
-{"domainName":"ed.ac.uk","dns":{"state":0,"lastCheck":1507751961495},"ping":{"state":0,"lastCheck":1507746558964},"http":{"state":1,"lastCheck":1507745097301}}
