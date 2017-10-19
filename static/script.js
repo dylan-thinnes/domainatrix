@@ -176,10 +176,10 @@ var DomainListItem = function (domainJson) {
 		"httpLastCheck": ()=>{}
 	}
 	this.update(domainJson);
-	if (this.ping.value.lastCheck === 0) {
+	if (this.ping.value.lastCheck === 0 || this.ping.value.state === -1 || this.ping.value.state === -2) {
 		this.ping.getRemote(console.log.bind(this, "ping update ran due to 0 lastCheck"));
 	}
-	if (this.http.value.lastCheck === 0) {
+	if (this.http.value.lastCheck === 0 || this.http.value.state === -1 || this.http.value.state === -2) {
 		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastCheck"));
 	}
 }
