@@ -1,12 +1,11 @@
 const dns = require('dns');
 const http = require('http');
 const ping = require('ping');
-const fs = require('fs');
 const sqlite3 = require('sqlite3');
 const RemoteProperty = require('./remoteproperty');
 
 class Domain {
-	constructor (domainName, isNew, initCallback, db, data) {
+	constructor (domainName, isNew, initCallback, db) {
 		this.domainName = domainName;
 		this.isNew = isNew;
 		this.initDone = false;
@@ -39,11 +38,9 @@ class Domain {
 		}, this.writeState.bind(this));
 		if (this.isNew === true) {
 			this.dns.check(initCallback, this.finishInit.bind(this, "dns"));
-		} else {
-			//this.parseState(initCallback, undefined, data);
-			//this.readState(initCallback);
 		}
 	}
+
 	finishInit () {
 		if (this.initDone === false) {
 			if (this.isNew === true) {
@@ -52,11 +49,6 @@ class Domain {
 			}
 			this.initDone = true;
 		}
-	}
-
-	readState(callback) {
-		this.callback = callback ? callback : ()=>{};
-		fs.readFile("domains/" + this.domainName + ".txt", "utf8", this.parseState.bind(this, callback));
 	}
 
 	parseState (callback, err, res) {
@@ -94,6 +86,7 @@ class Domain {
 			}
 		}
 	}
+
 	toDb () {
 		return {
 			$domainName: this.domainName,
@@ -105,11 +98,9 @@ class Domain {
 			$httpLastCheck: this.http.lastCheck
 		}
 	}
+
 	writeState () {
-		//console.log(this.toDb());
-		//this.db.run("INSERT INTO domains VALUES ($domainName, $dns, $dnsLastCheck, $ping, $pingLastCheck, $http, $httpLastCheck)", this.toDb());
 		this.db.run("UPDATE domains SET dns = $dns, dnsLastCheck = $dnsLastCheck, ping = $ping, pingLastCheck = $pingLastCheck, http = $http, httpLastCheck = $httpLastCheck WHERE domainName = $domainName", this.toDb());
-		//fs.writeFile("domains/" + this.domainName + ".txt", JSON.stringify(this.toJson()), () => {});
 	}
 }
 exports = module.exports = Domain;

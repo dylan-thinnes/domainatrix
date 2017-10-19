@@ -18,14 +18,6 @@ class DomainData {
 			http INTEGER NOT NULL,
 			httpLastCheck INTEGER NOT NULL
 		)`);
-		/*this.initCandidates = domainEntries.length + 1;
-		this.total = domainEntries;
-		for (var ii = 0; ii < domainEntries.length; ii++) {
-			let name = domainEntries[ii].replace(/^(.+)\.txt$/g, "$1");
-			if (name === null) this.callbackControl("initCandidate");
-			else this.addDomainCandidate(name, false, this.callbackControl.bind(this, "initCandidate", ii, name));
-		}
-		this.callbackControl("initCandidate");*/
 		this.db.all("SELECT * FROM domains", this.parseExistingCandidates.bind(this));
 	}
 	parseExistingCandidates(err, res) {
@@ -79,16 +71,12 @@ class DomainData {
 			delete this.domains[domain];
 			callback({"state": 2});
 		} else {
-			/*this.domains[domain].checkPing();
-			this.domains[domain].checkHttp();*/
 			callback({"state": 0, "data": this.domains[domain].toJson()});
 		}
 	}
 	getJson (){
-		//return JSON.stringify(this.domains);
 		var res = [];
 		for (var index in this.domains) {
-			//res[this.domains[index].domainName] = this.domains[index].toJson();
 			if (this.domains[index].initDone === false) continue;
 			res.push(this.domains[index].toJson());
 		}
