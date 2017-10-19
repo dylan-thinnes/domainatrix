@@ -18,7 +18,6 @@ var writeJsonFileToDb = function (name, err, res) {
 		$http: jsonRes.http.state,
 		$httpLastCheck: jsonRes.http.lastCheck
 	}
-	console.log()
 	db.run("UPDATE domains SET dns = $dns, dnsLastCheck = $dnsLastCheck, ping = $ping, pingLastCheck = $pingLastCheck, http = $http, httpLastCheck = $httpLastCheck WHERE domainName = $domainName", input);
 }
 var res = fs.readdirSync("./domains");
