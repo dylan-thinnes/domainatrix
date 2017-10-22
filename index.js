@@ -13,5 +13,6 @@ routes.makeRoutes().then(subapp => {
 		res.send('');
 	});
 
-	app.listen(8080);
+	if (process.argv.includes("-d")) app.listen(8080);
+	else app.listen(80, "domainatrix.me"); 
 })
