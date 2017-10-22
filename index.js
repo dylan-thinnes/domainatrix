@@ -3,7 +3,7 @@ const app = express();
 const routes = require('./server/routes.js');
 
 // fallthrough to static files
-app.use(express.static('static'))
+app.use(express.static(__dirname + '/static'));
 
 routes.makeRoutes().then(subapp => {
 	app.use(subapp);
@@ -13,6 +13,6 @@ routes.makeRoutes().then(subapp => {
 		res.send('');
 	});
 
-	if (process.argv.includes("-d")) app.listen(8080);
-	else app.listen(80, "domainatrix.me"); 
-})
+});
+
+exports = module.exports = app;
