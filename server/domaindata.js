@@ -54,7 +54,6 @@ class DomainData {
 		if (parsedDomain !== null) {
 			if (this.domains[domain] !== undefined) callback({"state": 1});
 			else {
-				var subDomain = parsedDomain[1];
 				if (isNew !== false) {
 					this.domains[domain] = new Domain(domain, isNew, this.parseCandidate.bind(this, domain, callback), this.db);
 				} else {
@@ -66,6 +65,7 @@ class DomainData {
 	}
 	parseCandidate(domain, callback, dns) {
 		if (dns !== 0) {
+			this.domains[domain].delete();
 			delete this.domains[domain];
 			callback({"state": 2});
 		} else {

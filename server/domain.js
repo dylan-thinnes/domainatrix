@@ -40,7 +40,9 @@ class Domain {
 			this.dns.check(initCallback, this.finishInit.bind(this, "dns"));
 		}
 	}
-
+	delete () {
+		this.db.run("DELETE FROM domains WHERE domainName = $domainName", {$domainName: this.domainName});
+	}
 	finishInit () {
 		if (this.initDone === false) {
 			if (this.isNew === true) {
