@@ -36,7 +36,7 @@ class Domain {
 			return http;
 		}, this.writeState.bind(this));
 		if (this.isNew === true) {
-			//this.db.run("INSERT INTO domains VALUES ($domainName, $dns, $dnsLastCheck, $ping, $pingLastCheck, $http, $httpLastCheck)", this.toDb());
+			this.db.run("INSERT INTO domains VALUES ($domainName, $dns, $dnsLastCheck, $ping, $pingLastCheck, $http, $httpLastCheck)", this.toDb());
 			this.dns.check(initCallback, this.finishInit.bind(this, "dns"));
 		}
 	}
