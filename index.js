@@ -15,4 +15,5 @@ routes.makeRoutes().then(subapp => {
 
 });
 
+if (process.argv.includes("-d")) app.listen(8080);
 exports = module.exports = app;
