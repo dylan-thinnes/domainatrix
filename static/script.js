@@ -361,7 +361,7 @@ DomainList.prototype.getRemoteDomains = function () {
 	if (this.state >= 0) {
 		this.setState(-2);
 		var req = new XMLHttpRequest();
-		req.open("GET", "/data");
+		req.open("GET", "/data?t=" + Date.now().toString(36));
 		req.onreadystatechange = (function (req) {
 			if (req.readyState === 4) {
 				this.setRemoteDomains(req.response);
