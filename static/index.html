@@ -7,6 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 	<body>
+		<div id="stagingArea"></div>
 		<div class="main" id="noScript">
 			<span class="centerText" style="font-size: 20px;">Domainatrix requires JavaScript</span>
 			<span class="centerText paddedText"><i>Please enable JavaScript to use this site.</i></span>
@@ -28,16 +29,8 @@
 			<!--<span class="centerText" style="font-size: 18px;">The Domain List (So Far)</span>-->
 			<div id="addDomain" class="paddedText labeledInput"><input id="addDomainInput" type="text"placeholder="Submit a New Domain" spellcheck="false"></input></div>
 			<span class="centerText paddedText" id="serverFeedback"></span>
-			<div class="domainListItem" id="domainListHeader">
-				<div class="domainTitle">
-					<div class="domainDns">DNS</div>
-					<div class="domainPing">Ping</div>
-					<div class="domainHttp">HTTP</div>
-					<div class="domainTableSpacer"></div>
-					<span class="domainPrefix">Domain (.ed.ac.uk)</span>
-				</div>
-			</div>
-			<div id="domainList"></div>
+			<div class="domainListItem" id="domainListHeader">DNS |Ping|HTTP|Domain (.ed.ac.uk)</div>
+			<ul id="domainList"></ul>
 			<div id="updateDomainList" class="button paddedText">Update Domain List</div>
 			<div id="searchDomains" class="labeledInput"><input id="searchDomainInput" type="text" placeholder="Search Domains" spellcheck="false"></input><div id="domainCount"></div></div>
 			<div class="divider"></div>

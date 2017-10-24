@@ -5,6 +5,7 @@ class DomainData {
 	
 	constructor (resolve, reject) {
 		this.domains = {}; 
+		this.orderedDomains = [];
 		this.initCallback = resolve;
 		this.db = new sqlite3.Database("app.db");
 		this.db.exec(`CREATE TABLE IF NOT EXISTS domains (
@@ -16,7 +17,7 @@ class DomainData {
 			http INTEGER NOT NULL,
 			httpLastCheck INTEGER NOT NULL
 		)`);
-		this.db.all("SELECT * FROM domains", this.parseExistingCandidates.bind(this));
+		this.db.all("SELECT * FROM domains ORDER BY domainName ASC", this.parseExistingCandidates.bind(this));
 	}
 	parseExistingCandidates(err, res) {
 		this.initCandidates = res.length + 1;
@@ -49,6 +50,17 @@ class DomainData {
 		callback(res);
 	}
 
+	findOrderedIndex(domain, subsetLeft, subsetRight) {
+		subsetLeft = subsetLeft !== undefined ? subsetLeft : 0;
+		subsetRight = subsetRight !== undefined ? subsetRight : this.orderedDomains.length;
+		while (subsetLeft !== subsetRight) {
+			var checkDomain = this.orderedDomains[subsetLeft + Math.floor((subsetRight - subsetLeft) / 2)];
+			if (checkDomain > domain) subsetRight = subsetLeft + Math.floor((subsetRight - subsetLeft) / 2);
+			else subsetLeft = subsetRight - Math.floor((subsetRight - subsetLeft) / 2);
+		}
+		return subsetLeft;
+	}
+
 	addDomainCandidate(domain, isNew, callback, data) {
 		var parsedDomain = this.parseDomain(domain);
 		if (parsedDomain !== null) {
@@ -69,12 +81,14 @@ class DomainData {
 			delete this.domains[domain];
 			callback({"state": 2});
 		} else {
+			this.orderedDomains.splice(this.findOrderedIndex(domain), 0, domain);
 			callback({"state": 0, "data": this.domains[domain].toJson()});
 		}
 	}
-	getJson (){
+	getJson () {
 		var res = [];
-		for (var index in this.domains) {
+		for (var ii = 0; ii < this.orderedDomains.length; ii++) {
+			var index = this.orderedDomains[ii];
 			if (this.domains[index].initDone === false) continue;
 			res.push(this.domains[index].toJson());
 		}
