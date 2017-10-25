@@ -130,7 +130,7 @@ a:active {
 }
 .domainTitle {
 	cursor: pointer;
-	height: 1em;
+	height: 18px;
 }
 .domainTitle:hover {
 	background-color: #eee;
