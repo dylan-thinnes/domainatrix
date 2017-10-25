@@ -1,3 +1,4 @@
+'use strict';
 var RemoteProperty = function (initValue, checker, parser, change, limit, startCallback, getRemote, initCallback) {
 	this.checker = checker ? checker : ()=>{};
 	this.parser = parser ? parser : function () {return arguments};
@@ -89,9 +90,10 @@ var DomainListItem = function (domainJson) {
 		"http": this.setHttp.bind(this),
 	}
 }
-DomainListItem.prototype.initializeNodes = function () {
+DomainListItem.prototype.initializeNodes = function (root) {
 	this.nodes = {};
-	this.nodes.root = document.getElementById(this.tempId);
+	//this.nodes.root = document.getElementById(this.tempId);
+	this.nodes.root = root;
 	this.nodes.dns = this.nodes.root.children[0];
 	this.nodes.ping = this.nodes.root.children[1];
 	this.nodes.http = this.nodes.root.children[2];
@@ -117,7 +119,7 @@ DomainListItem.prototype.initializeNodes = function () {
 	}
 }
 DomainListItem.prototype.formatDate = function (timestamp) {
-	if (timestamp === 0) return "Still Checking"
+	if (timestamp === 0) return "Still Checking";
 	var date = new Date(timestamp);
 	return (date.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + date.getUTCMonth().toString().padStart(2, "0") + "/" + date.getUTCDate().toString().padStart(2, "0") + " " + date.getUTCHours().toString().padStart(2, "0") + ":" + date.getUTCMinutes().toString().padStart(2, "0");
 }
@@ -179,6 +181,9 @@ DomainListItem.prototype.toggle = function () {
 	if (this.hidden) this.show();
 	else this.hide();
 }
+DomainListItem.prototype.toString = function () {
+	return this.domString;
+}
 var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId, callback) {
 	/*
 	state -2: Getting server domain list.
@@ -231,6 +236,7 @@ var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainC
 	this.updateNode.addEventListener("click", this.getRemoteDomains.bind(this));
 	this.initDone = false;
 	this.initCallback = callback;
+	this.allShown = true;
 	this.getRemoteDomains();
 }
 Object.defineProperty(DomainList.prototype, "search", {
@@ -262,7 +268,6 @@ DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
 	return subsetLeft;
 }
 DomainList.prototype.addDomainItem = function (resJson) {
-	console.log("addDomainItem called");
 	if (this.entries[resJson.domainName] === undefined) {
 		var orderedIndex = this.findOrderedIndex(resJson.domainName);
 		this.orderedDomains.splice(orderedIndex, 0, resJson.domainName);
@@ -314,13 +319,15 @@ DomainList.prototype.getRemoteDomains = function () {
 }
 DomainList.prototype.setRemoteDomains = function (res) {
 	try {
-		console.log(start = Date.now());
 		var domString = "";
 		var resJson = JSON.parse(res);
-		if (resJson.length < (this.entries + 300)) {
+		if (resJson.length < (this.orderedDomains.length + 300)) {
+			console.log(window.start = Date.now());
+			console.log("few enough entries...");
 			for (var ii = 0; ii < resJson.length; ii++) {
 				this.addDomainItem(resJson[ii]);
 			}
+			console.log("addDomainItem calls made, took ", Date.now() - window.start);
 			this.setState(4);
 			this.searchDomainItems();
 			if (this.initDone === false) {
@@ -328,7 +335,7 @@ DomainList.prototype.setRemoteDomains = function (res) {
 				this.initCallback();
 			}
 		} else {
-			console.log(start = Date.now());
+			console.log(window.start = Date.now());
 			var domString = [];
 			var resJson = JSON.parse(res);
 			//var remainingEntries = new Set(Object.keys(this.entries));
@@ -344,17 +351,21 @@ DomainList.prototype.setRemoteDomains = function (res) {
 				//domString += this.entries[resJson[ii].domainName].domString;
 				//remainingEntries.delete(resJson[ii].domainName);
 			}
-			console.log("creating domstring took ", Date.now() - start);
+			console.log("creating domstring took ", Date.now() - window.start);
+			window.start = Date.now();
 			//console.log(domStrings.join(""));
 			this.node.innerHTML = domString.join("");
-			console.log("adding domstring took ", Date.now() - start);
+			console.log("adding domstring took ", Date.now() - window.start);
+			window.start = Date.now();
 			for (var ii = 0; ii < resJson.length; ii++) {
-				this.entries[resJson[ii].domainName].initializeNodes();
+				this.entries[resJson[ii].domainName].initializeNodes(this.node.children[ii]);
 			}
-			console.log("initialization took ", Date.now() - start);
+			console.log("initialization took ", Date.now() - window.start);
+			window.start = Date.now();
 			this.setState(4);
 			this.searchDomainItems();
-			//console.log()
+			console.log("setState and search took", Date.now() - window.start);
+			window.start = Date.now();
 			if (this.initDone === false) {
 				this.initDone = true;
 				this.initCallback();
@@ -381,6 +392,8 @@ DomainList.prototype.serverResponseControl = function (res) {
 DomainList.prototype.searchDomainItems = function (e) {
 	if (e !== undefined && e.keyCode !== 13) return console.log("not searching...");
 	if (this.search === "") {
+		if (this.allShown !== false) return console.log("not searching due to allShown...");
+		this.allShown = true;
 		console.log("no search, showing all.")
 		var entriesExist = 0;
 		var entriesShown = 0;
@@ -402,17 +415,19 @@ DomainList.prototype.searchDomainItems = function (e) {
 		for (var domain in this.entries) {
 			var subdomain = this.entries[domain].domain === "ed.ac.uk" ? "ed.ac.uk" : this.entries[domain].subdomain;
 			if (subdomain === undefined) continue;
-			if (subdomain.match(regex) !== null) {
+			if (regex.test(subdomain)) {
 				this.entries[domain].show();
 				entriesShown++;
 			} else this.entries[domain].hide();
 			entriesExist++;
 		}
 		this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
+		if (entriesExist !== entriesShown) this.allShown = false;
+		else this.allShown = true;
 	}
 }
 console.log("Script loaded.");
-var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount", function () {console.log(Date.now(), Date.now() - start)});
+var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount", function () {console.log(Date.now())});
 /*var req = new XMLHttpRequest();
 req.open("GET", "/domains.txt");
 req.onreadystatechange = function () {
