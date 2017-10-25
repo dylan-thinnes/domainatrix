@@ -81,7 +81,6 @@ var DomainListItem = function (domainJson) {
 		this.show = this.hide;
 	} else {
 		this.subdomain = match[2] !== undefined ? match[2] : "(ed.ac.uk)";
-		this.domString = `<li class="domainTitle" id="` + this.tempId + `"><span style="background-color: ` + this.colorCode[this.dns.value.state] + `" class="domainDns">----</span>|<span style="background-color: ` + this.colorCode[this.ping.value.state] + `" class="domainPing">----</span>|<span style="background-color: ` + this.colorCode[this.http.value.state] + `" class="domainHttp">----</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
 	}
 	this.updateKey = {
 		"domainName": ()=>{},
@@ -89,6 +88,9 @@ var DomainListItem = function (domainJson) {
 		"ping": this.setPing.bind(this),
 		"http": this.setHttp.bind(this),
 	}
+}
+DomainListItem.prototype.domString = function (styling) {
+	return `<li class="domainTitle" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.value.state] + `" class="domainDns">----</span>|<span style="background-color: ` + this.colorCode[this.ping.value.state] + `" class="domainPing">----</span>|<span style="background-color: ` + this.colorCode[this.http.value.state] + `" class="domainHttp">----</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
 }
 DomainListItem.prototype.initializeNodes = function (root) {
 	this.nodes = {};
@@ -181,9 +183,6 @@ DomainListItem.prototype.toggle = function () {
 	if (this.hidden) this.show();
 	else this.hide();
 }
-DomainListItem.prototype.toString = function () {
-	return this.domString;
-}
 var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId, callback) {
 	/*
 	state -2: Getting server domain list.
@@ -208,16 +207,18 @@ var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainC
 	this.feedback = {
 		node: document.getElementById(feedbackId),
 		stateTexts: {
-			"-2": "Querying server for existing domains...",
+			"-3": "Rendering new list of domains...",
+			"-2": "Querying server for list of domains...",
 			"-1": "Querying server about submitted domain...",
 			"0":  "Domain legitimate. Added.",
 			"1":  "Domain is already in the list.",
 			"2":  "Domain has no DNS entry.",
 			"3":  "Domain is not a subdomain of ed.ac.uk.",
-			"4":  "Got the domain list from server.",
+			"4":  "List of domains found and rendered.",
 			"5":  "Could not get the domain list from server."
 		},
 		stateColours: {
+			"-3": "#CDDC39",
 			"-2": "#CDDC39",
 			"-1": "#CDDC39",
 			"0":  "#4CAf50",
@@ -272,8 +273,8 @@ DomainList.prototype.addDomainItem = function (resJson) {
 		var orderedIndex = this.findOrderedIndex(resJson.domainName);
 		this.orderedDomains.splice(orderedIndex, 0, resJson.domainName);
 		this.entries[resJson.domainName] = new DomainListItem(resJson);
-		this.stagingArea.innerHTML = this.entries[resJson.domainName].domString;
-		this.entries[resJson.domainName].initializeNodes();
+		this.stagingArea.innerHTML = this.entries[resJson.domainName].domString();
+		this.entries[resJson.domainName].initializeNodes(this.stagingArea.children[0]);
 		if (this.node.children.length === 0) {
 			this.node.appendChild(this.entries[resJson.domainName].nodes.root);
 		} else if (orderedIndex === this.node.children.length) {
@@ -281,6 +282,7 @@ DomainList.prototype.addDomainItem = function (resJson) {
 		} else {
 			this.node.insertBefore(this.entries[resJson.domainName].nodes.root, this.node.children[orderedIndex]);
 		}
+		this.stagingArea.innerHTML = "";
 		this.searchDomainItems();
 	} else {
 		this.entries[resJson.domainName].update(resJson);
@@ -312,70 +314,35 @@ DomainList.prototype.getRemoteDomains = function () {
 			}
 		}).bind(this, req);
 		req.send();
-	} else {
-		console.log("State already running, wait until later.");
-	}
-
+	} else console.log("State already running, wait until later.");
 }
 DomainList.prototype.setRemoteDomains = function (res) {
 	try {
-		var domString = "";
 		var resJson = JSON.parse(res);
-		if (resJson.length < (this.orderedDomains.length + 300)) {
-			console.log(window.start = Date.now());
-			console.log("few enough entries...");
-			for (var ii = 0; ii < resJson.length; ii++) {
-				this.addDomainItem(resJson[ii]);
-			}
-			console.log("addDomainItem calls made, took ", Date.now() - window.start);
-			this.setState(4);
-			this.searchDomainItems();
-			if (this.initDone === false) {
-				this.initDone = true;
-				this.initCallback();
-			}
-		} else {
-			console.log(window.start = Date.now());
-			var domString = [];
-			var resJson = JSON.parse(res);
-			//var remainingEntries = new Set(Object.keys(this.entries));
-			this.orderedDomains = [];
-			this.entries = {};
-			for (var ii = 0; ii < resJson.length; ii++) {
-				//var orderedIndex = this.findOrderedIndex(resJson[ii].domainName);
-				//this.orderedDomains.splice(orderedIndex, 0, resJson[ii].domainName);
-				this.orderedDomains.push(resJson[ii].domainName);
-				this.entries[resJson[ii].domainName] = new DomainListItem(resJson[ii]);
-				//domStrings.splice(orderedIndex, 0, this.entries[resJson[ii].domainName].domString);
-				domString.push(this.entries[resJson[ii].domainName].domString);
-				//domString += this.entries[resJson[ii].domainName].domString;
-				//remainingEntries.delete(resJson[ii].domainName);
-			}
-			console.log("creating domstring took ", Date.now() - window.start);
-			window.start = Date.now();
-			//console.log(domStrings.join(""));
-			this.node.innerHTML = domString.join("");
-			console.log("adding domstring took ", Date.now() - window.start);
-			window.start = Date.now();
-			for (var ii = 0; ii < resJson.length; ii++) {
-				this.entries[resJson[ii].domainName].initializeNodes(this.node.children[ii]);
-			}
-			console.log("initialization took ", Date.now() - window.start);
-			window.start = Date.now();
-			this.setState(4);
-			this.searchDomainItems();
-			console.log("setState and search took", Date.now() - window.start);
-			window.start = Date.now();
-			if (this.initDone === false) {
-				this.initDone = true;
-				this.initCallback();
-			}	
+		this.orderedDomains = [];
+		this.entries = {};
+		for (var ii = 0; ii < resJson.length; ii++) {
+			this.orderedDomains.push(resJson[ii].domainName);
+			this.entries[resJson[ii].domainName] = new DomainListItem(resJson[ii]);
 		}
-		
+		this.allShown = false;
+		this.searchDomainItems();
+		if (this.initDone === false) {
+			this.initDone = true;
+			this.initCallback();
+		}	
 	} catch (e) {
 		this.setState(5);
 		console.log(e, "Illegitimate output from server on /data endpoint.");
 	}
+}
+DomainList.prototype.setMarkup = function (domains) {
+	this.setState(-3);
+	var markup = [];
+	for (var ii = 0; ii < domains.length; ii++) markup.push(this.entries[domains[ii]].domString());
+	this.node.innerHTML = markup.join("");
+	for (var ii = 0; ii < domains.length; ii++) this.entries[domains[ii]].initializeNodes(this.node.children[ii]);
+	this.setState(4);
 }
 DomainList.prototype.serverResponseControl = function (res) {
 	try {
@@ -383,26 +350,19 @@ DomainList.prototype.serverResponseControl = function (res) {
 		this.setState(resJson.state);
 		if (resJson.state === 0) {
 			this.addDomainItem(resJson.data);
-		} else {
 		}
 	} catch (e) {
 		console.log(e, "Illegitimate output from server on /add endpoint.");
 	}
 }
 DomainList.prototype.searchDomainItems = function (e) {
-	if (e !== undefined && e.keyCode !== 13) return console.log("not searching...");
+	if (e !== undefined && e.keyCode !== 13) return;
 	if (this.search === "") {
-		if (this.allShown !== false) return console.log("not searching due to allShown...");
-		this.allShown = true;
-		console.log("no search, showing all.")
-		var entriesExist = 0;
-		var entriesShown = 0;
-		for (var domain in this.entries) {
-			this.entries[domain].show();
-			entriesExist++;
-			entriesShown++;
+		if (this.allShown !== true) {
+			this.allShown = true;
+			this.setMarkup(this.orderedDomains);
 		}
-		this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
+		this.domainCount.innerHTML = this.orderedDomains.length + "/" + this.orderedDomains.length;
 	} else {
 		try {
 			var regex = new RegExp(this.search);
@@ -412,22 +372,25 @@ DomainList.prototype.searchDomainItems = function (e) {
 		}
 		var entriesExist = 0;
 		var entriesShown = 0;
-		for (var domain in this.entries) {
+		var showingDomains = [];
+		for (var ii = 0; ii < this.orderedDomains.length; ii++) {
+			var domain = this.orderedDomains[ii];
 			var subdomain = this.entries[domain].domain === "ed.ac.uk" ? "ed.ac.uk" : this.entries[domain].subdomain;
 			if (subdomain === undefined) continue;
 			if (regex.test(subdomain)) {
-				this.entries[domain].show();
 				entriesShown++;
-			} else this.entries[domain].hide();
+				showingDomains.push(domain);
+			}
 			entriesExist++;
 		}
+		this.setMarkup(showingDomains);
 		this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
 		if (entriesExist !== entriesShown) this.allShown = false;
 		else this.allShown = true;
 	}
 }
 console.log("Script loaded.");
-var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount", function () {console.log(Date.now())});
+var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount", function () {console.log("Init of DomainList complete.")});
 /*var req = new XMLHttpRequest();
 req.open("GET", "/domains.txt");
 req.onreadystatechange = function () {
