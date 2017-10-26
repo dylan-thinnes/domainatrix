@@ -59,7 +59,7 @@ a:active {
 	box-sizing: border-box;
 	border: 1px solid #999999;
 	border-radius: 0.25em;
-	align-self: flex-start;
+	align-self: flex-end;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -162,23 +162,19 @@ a:active {
 	padding: 1pt 0 1pt 0;
 }
 .domainInfoGet {
-	margin-right: 1ch;
+	margin-right: 0.5ch;
 	width: 10ch;
 	height: 1.5em;
+	align-self: center;
 }
 .goToDomain {
 	width: 20ch;
-	color: black;
+	color: #111;
 	text-decoration: none;
 }
-.lastCheck {
-	text-align: right;
-	width: 33ch;
-	height: 1em;
-}
-.state {
-	text-align: left;
-	flex: 1 1 auto;
+.info {
+	border-left: 1px solid #111;
+	padding-left: 0.5ch;
 }
 
 #credit {
