@@ -417,7 +417,7 @@ var DomainInfo = function (node, list) {
 			if (this.focus !== undefined) this.focus.focused = false;
 			this.focus = this.list.entries[newFocus];
 			this.focus.focused = true;
-			this.name.innerHTML = this.focus.domain + ".ed.ac.uk";
+			this.name.innerHTML = this.focus.domain;
 			this.goToDomain.href = "http://" + this.focus.domain;
 			this.focus.setDns();
 			this.focus.setPing();
