@@ -1,7 +1,5 @@
 node_modules/
-*.db
 *~
 *.swp
 *.swo
 package-lock.json
-
