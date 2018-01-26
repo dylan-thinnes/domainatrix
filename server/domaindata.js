@@ -1,98 +1,89 @@
-const sqlite3 = require('sqlite3');
 const Domain = require('./domain');
+const abstractdb = require("abstractdb");
+const Database = abstractdb("better-sqlite3");
+const RemoteProperty = require("./remoteproperty");
 
-class DomainData {
-	
-	constructor (resolve, reject) {
-		this.domains = {}; 
-		this.orderedDomains = [];
-		this.initCallback = resolve;
-		this.db = new sqlite3.Database("app.db");
-		this.db.exec(`CREATE TABLE IF NOT EXISTS domains (
-			domainName TEXT PRIMARY KEY,
-			dns INTEGER NOT NULL,
-			dnsLastCheck INTEGER NOT NULL,
-			ping INTEGER NOT NULL,
-			pingLastCheck INTEGER NOT NULL,
-			http INTEGER NOT NULL,
-			httpLastCheck INTEGER NOT NULL
-		)`);
-		this.db.all("SELECT * FROM domains ORDER BY domainName ASC", this.parseExistingCandidates.bind(this));
-	}
-	parseExistingCandidates(err, res) {
-		this.initCandidates = res.length + 1;
-		for (var ii = 0; ii < res.length; ii++) {
-			this.addDomainCandidate(res[ii]["domainName"], false, this.callbackControl.bind(this, "initCandidate"), res[ii]);
-		}
-		this.callbackControl("initCandidate");
-	}
-	callbackControl(event) {
-		if (event === "initCandidate") {
-			this.initCandidates--;
-		}
-		if (this.initCandidates === 0) {
-			this.initCallback(this);
-		}
-	}
-	parseDomain(domain) {
-		return domain.match(/^([^\s]+\.|)ed\.ac\.uk$/g);
-	}
-
-	getXFromDomain(x, domain, callback) {
-		if (this.domains[domain] !== undefined) this.domains[domain][x].check(this.writeXFromDomain.bind(this, x, domain, callback));
-		else callback({"state": 2});
-	}
-	writeXFromDomain(x, domain, callback, state) {
-		var res = {};
-		res[x] = {};
-		res[x]["state"] = state;
-		res[x]["lastCheck"] = this.domains[domain][x].lastCheck
-		callback(res);
-	}
-
-	findOrderedIndex(domain, subsetLeft, subsetRight) {
-		subsetLeft = subsetLeft !== undefined ? subsetLeft : 0;
-		subsetRight = subsetRight !== undefined ? subsetRight : this.orderedDomains.length;
-		while (subsetLeft !== subsetRight) {
-			var checkDomain = this.orderedDomains[subsetLeft + Math.floor((subsetRight - subsetLeft) / 2)];
-			if (checkDomain > domain) subsetRight = subsetLeft + Math.floor((subsetRight - subsetLeft) / 2);
-			else subsetLeft = subsetRight - Math.floor((subsetRight - subsetLeft) / 2);
-		}
-		return subsetLeft;
-	}
-
-	addDomainCandidate(domain, isNew, callback, data) {
-		var parsedDomain = this.parseDomain(domain);
-		if (parsedDomain !== null) {
-			if (this.domains[domain] !== undefined) callback({"state": 1});
-			else {
-				if (isNew !== false) {
-					this.domains[domain] = new Domain(domain, isNew, this.parseCandidate.bind(this, domain, callback), this.db);
-				} else {
-					this.domains[domain] = new Domain(domain, isNew, ()=>{}, this.db);
-					this.domains[domain].parseState(this.parseCandidate.bind(this, domain, callback), undefined, data);
-				}
-			}
-		} else callback({"state": 3});
-	}
-	parseCandidate(domain, callback, dns) {
-		if (dns !== 0) {
-			this.domains[domain].delete();
-			delete this.domains[domain];
-			callback({"state": 2});
-		} else {
-			this.orderedDomains.splice(this.findOrderedIndex(domain), 0, domain);
-			callback({"state": 0, "data": this.domains[domain].toJson()});
-		}
-	}
-	getJson () {
-		var res = [];
-		for (var ii = 0; ii < this.orderedDomains.length; ii++) {
-			var index = this.orderedDomains[ii];
-			if (this.domains[index].initDone === false) continue;
-			res.push(this.domains[index].toJson());
-		}
-		return res;
-	}
+var DomainData = function () {
+    this.domains = {}; 
+    this.orderedDomains = [];
+    this.db = new Database("app.db");
+    this.db.sRun(`CREATE TABLE IF NOT EXISTS domains (
+        name TEXT PRIMARY KEY,
+        dns INTEGER NOT NULL,
+        dnsLastCheck INTEGER NOT NULL,
+        ping INTEGER NOT NULL,
+        pingLastCheck INTEGER NOT NULL,
+        http INTEGER NOT NULL,
+        httpLastCheck INTEGER NOT NULL
+    )`);
 }
 exports = module.exports = DomainData;
+
+DomainData.prototype.init = async function () {
+    var existingCandidates = this.db.sAll("SELECT * FROM domains ORDER BY name ASC");
+    await this.parseExistingCandidates(existingCandidates);
+    return;
+}
+
+DomainData.prototype.parseExistingCandidates = async function (res) {
+    var candidacies = [];
+    for (var ii = 0; ii < res.length; ii++) {
+        candidacies[this.addDomainCandidate(res[ii]["name"], false, res[ii])];
+    }
+    await Promise.all(candidacies);
+}
+DomainData.prototype.parseDomain = function (domain) {
+    return domain.match(/^([^\s]+\.|)ed\.ac\.uk$/g);
+}
+
+DomainData.prototype.getXFromDomain = async function (x, domainName) {
+    var domain = this.domains[domainName];
+    if (domain == undefined) return { "state": 2 };
+    await domain[x].update();
+    var res = {};
+    res[x] = {};
+    res[x]["state"] = domain[x].value;
+    res[x]["lastUpdate"] = domain[x].lastUpdate;
+    return res;
+}
+
+DomainData.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRight) {
+    subsetLeft = subsetLeft !== undefined ? subsetLeft : 0;
+    subsetRight = subsetRight !== undefined ? subsetRight : this.orderedDomains.length;
+    while (subsetLeft !== subsetRight) {
+        var checkDomain = this.orderedDomains[subsetLeft + Math.floor((subsetRight - subsetLeft) / 2)];
+        if (checkDomain > domain) subsetRight = subsetLeft + Math.floor((subsetRight - subsetLeft) / 2);
+        else subsetLeft = subsetRight - Math.floor((subsetRight - subsetLeft) / 2);
+    }
+    return subsetLeft;
+}
+
+DomainData.prototype.addDomainCandidate = async function (domain, isNew, data) {
+    var parsedDomain = this.parseDomain(domain);
+    if (parsedDomain === null) return { "state": 3 };
+    if (this.domains[domain] !== undefined) return { "state": 1 };
+
+    var candidate = new Domain(domain, this.db);
+    if (isNew === false) candidate.setFromDb(data);
+    else {
+        await candidate.dns.update();
+        if (candidate.dns.get() === RemoteProperty.DOES_NOT_EXIST) {
+            candidate.delete();
+            delete candidate;
+            return {"state": 2};
+        }
+    }
+    this.domains[domain] = candidate;
+    this.orderedDomains.splice(this.findOrderedIndex(domain), 0, domain);
+    return { "state": 0, "data": candidate.toJson() };
+}
+
+DomainData.prototype.getJson = function () {
+    var res = [];
+    for (var ii = 0; ii < this.orderedDomains.length; ii++) {
+        var index = this.orderedDomains[ii];
+        if (this.domains[index].initDone === false) continue;
+        res.push(this.domains[index].toJson());
+    }
+    return res;
+}
