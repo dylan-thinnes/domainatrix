@@ -1,0 +1,92 @@
+html {
+	overflow: hidden;
+}
+body {
+	margin: 0 auto 0 auto;
+	box-sizing: border-box;
+	width: 100vw;
+	max-width: 700px;
+	height: 100vh;
+	background-color: #f8f8f8;
+	color: #111;
+	font-size: 12pt;
+	font-family: monospace;
+	overflow: hidden;
+}
+* {
+    box-sizing: border-box;
+}
+
+%button {
+    &:hover {  background-color: #eee; }
+    &:active {
+        background-color: #ddd;
+        color: #000;
+    }
+    &:focus {
+        border-bottom-color: #111;
+    }
+}
+@mixin flex-width($ratio) {
+    flex: $ratio $ratio auto;
+    width: 0;
+    padding: 0;
+}
+@mixin flex-height($ratio) {
+    flex: $ratio $ratio auto;
+    height: 0;
+    padding: 0;
+}
+.hide {
+    display: none;
+}
+
+.page {
+	height: 100%;
+	padding: 3pt;
+	display: flex;
+	flex-direction: column;
+    > .title { font-size: 20pt; }
+    > .centered { text-align: center; }
+    > .padded { margin-top: 0.4rem; }
+    > .accent {
+        font-size: 9pt;
+        color: #444;
+        text-decoration: underline;
+    }
+    > .divider {
+        border-bottom: 1px solid #111;
+        margin: 4pt 0 4pt 0;
+    }
+    > .list {
+        @include flex-height(1);
+        margin: 0;
+        padding: 0;
+        > .item {
+            @extend %button;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+    }
+    > .input {
+        display: flex;
+        flex-direction: row;
+        > input[type=text] {
+            @include flex-width(1);
+            @extend %button;
+            border: 0;
+            background-color: transparent;
+            border-bottom: 1px solid #999;
+            font-family: inherit;
+            outline: none;
+        }
+    }
+    > #credit {
+        margin-top: 0.4rem;
+        font-size: 9pt;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}

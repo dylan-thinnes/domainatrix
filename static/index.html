@@ -8,30 +8,30 @@
 	</head>
 	<body>
 		<div id="stagingArea"></div>
-		<div class="main" id="noScript">
-			<span class="centerText" style="font-size: 20px;">Domainatrix requires JavaScript</span>
-			<span class="centerText paddedText"><i>Please enable JavaScript to use this site.</i></span>
-			<span class="paddedText">We understand the concerns you may have about JavaScript, but we need it for DOM manipulation.</span>
-			<span class="paddedText"><b>This site's JavaScript:</b><br/>- Is all in a single file &lt;20kB in size.<br/>- Is all self-written.<br/>- Only makes requests to its own domain and server.<br/>- Has no ads, no tracking, no sensitive data, no analytics.<br/>- Has no dependencies.</span>
+		<div class="page" id="noScript">
+			<span class="centered" style="font-size: 20px;">Domainatrix requires JavaScript</span>
+			<span class="centered padded"><i>Please enable JavaScript to use this site.</i></span>
+			<span class="padded">We understand the concerns you may have about JavaScript, but we need it for DOM manipulation.</span>
+			<span class="padded"><b>This site's JavaScript:</b><br/>- Is all in a single file &lt;20kB in size.<br/>- Is all self-written.<br/>- Only makes requests to its own domain and server.<br/>- Has no ads, no tracking, no sensitive data, no analytics.<br/>- Has no dependencies.</span>
 		</div>
 		<script>document.body.removeChild(document.getElementById("noScript"));</script>
-		<div class="main">
-			<span class="centerText" style="font-size: 20px;">Welcome to the Domainatrix.<!--8th Level of Hell--></span>
-			<a id="toggleGuide" class="paddedText toggleMoreInfo centerText"></a>
-			<div id="guide" class="paddedText moreInfo">
-				<!--<span class="paddedText">- Ever wondered about all those convoluted UoE subdomains?<br/>
+		<div class="page">
+			<span class="centered" style="font-size: 20px;">Welcome to the Domainatrix.<!--8th Level of Hell--></span>
+			<a id="toggleGuide" class="padded accent centered"></a>
+			<div id="guide" class="padded moreInfo">
+				<!--<span class="padded">- Ever wondered about all those convoluted UoE subdomains?<br/>
 				- Found a particularly saucy one you'd like to share?<br/>
 				- Just looking for an excuse to drink your sorrows away into an inky blackness of useless DNS records and expired certificates?<br/></span>
-				<div class="centerText paddedText"><b>You've come to the right place!</b></div>-->
+				<div class="centered padded"><b>You've come to the right place!</b></div>-->
 				The Domainatrix keeps track of UoE subdomains, which are domains/urls that are formatted "*.ed.ac.uk". Submit your own, and/or see ping and http checks of everything that everyone else has submitted.
 			</div>
 			<div class="divider"></div>
-			<!--<span class="centerText" style="font-size: 18px;">The Domain List (So Far)</span>-->
-			<div id="addDomain" class="paddedText labeledInput"><input id="addDomainInput" type="text"placeholder="Submit a New Domain" spellcheck="false"></input></div>
-			<span class="centerText paddedText" id="serverFeedback"></span>
+			<!--<span class="centered" style="font-size: 18px;">The Domain List (So Far)</span>-->
+			<div id="addDomain" class="padded input"><input id="addDomainInput" type="text"placeholder="Submit a New Domain" spellcheck="false"></input></div>
+			<span class="centered padded" id="serverFeedback"></span>
 			<div class="domainTitle">DNS |Ping|HTTP|Domain (.ed.ac.uk)</div>
-			<ul id="domainList"></ul>
-			<div id="domainInfo">
+			<ul id="domainList" class="list"></ul>
+			<div id="domainInfo" class="hide">
 				<div id="domainInfoName"></div>
 				<div id="disclaimer">*You may only recheck at most once every 30 minutes.</div>
 				<div class="domainInfoRow">
@@ -48,8 +48,8 @@
 				</div>
 				<div class="domainInfoRow"><a class="button domainInfoGet goToDomain" href="">Go To This Domain</a></div>
 			</div>
-			<div id="updateDomainList" class="button paddedText">Update Domain List</div>
-			<div id="searchDomains" class="labeledInput"><input id="searchDomainInput" type="text" placeholder="Search Domains" spellcheck="false"></input><div id="domainCount"></div></div>
+			<div id="updateDomainList" class="button padded">Update Domain List</div>
+			<div id="searchDomains" class="input"><input id="searchDomainInput" type="text" placeholder="Search Domains" spellcheck="false"></input><div id="domainCount"></div></div>
 			<div class="divider"></div>
 			<div id="credit"><span>Made by <a href="https://www.github.com/dylan-thinnes">Dylan Thinnes</a></span><span>Got a bug or a request? Let me know on <a href="https://www.github.com/dylan-thinnes/domainatrix/issues">the GitHub repo.</a></span></div>
 		</div>

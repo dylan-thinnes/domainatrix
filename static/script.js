@@ -92,7 +92,7 @@ var DomainListItem = function (domainJson, infoOutput) {
 	this.focused = false;
 }
 DomainListItem.prototype.domString = function (styling) {
-	return `<li class="domainTitle" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.value.state] + `" class="domainDns">----</span>|<span style="background-color: ` + this.colorCode[this.ping.value.state] + `" class="domainPing">----</span>|<span style="background-color: ` + this.colorCode[this.http.value.state] + `" class="domainHttp">----</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
+	return `<li class="item" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.value.state] + `" class="domainDns">----</span>|<span style="background-color: ` + this.colorCode[this.ping.value.state] + `" class="domainPing">----</span>|<span style="background-color: ` + this.colorCode[this.http.value.state] + `" class="domainHttp">----</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
 }
 DomainListItem.prototype.initializeNodes = function (root) {
 	this.nodes = {};
@@ -406,14 +406,14 @@ var DomainInfo = function (node, list) {
 		if (this.focus === undefined) return;
 		this.focus.focused = false;
 		this.focus = undefined;
-		this.node.style.display = "none";
+		this.node.classList.add("hide");
 	}
 	this.setFocus = function (newFocus) {
 		console.log("new focus...", newFocus);
 		if (this.focus !== undefined && newFocus === this.focus.domain) {
 			this.focus.focused = false;
 			this.focus = undefined;
-			this.node.style.display = "none";
+			this.node.classList.add("hide");
 		} else if (this.list.entries[newFocus] !== undefined) {
 			if (this.focus !== undefined) this.focus.focused = false;
 			this.focus = this.list.entries[newFocus];
@@ -423,7 +423,7 @@ var DomainInfo = function (node, list) {
 			this.focus.setDns();
 			this.focus.setPing();
 			this.focus.setHttp();
-			this.node.style.display = "initial";
+			this.node.classList.remove("hide");
 		}
 	}
 	this.setDns = function (newState, newDate) {
