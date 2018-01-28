@@ -1,3 +1,4 @@
+const url = require("url");
 const Domain = require('./domain');
 const abstractdb = require("abstractdb");
 const Database = abstractdb("better-sqlite3");
@@ -32,8 +33,16 @@ DomainData.prototype.parseExistingCandidates = async function (res) {
     }
     await Promise.all(candidacies);
 }
-DomainData.prototype.parseDomain = function (domain) {
-    return domain.match(/^([^\s]+\.|)ed\.ac\.uk$/g);
+
+DomainData.prototype.isEdAcUkRegex = new RegExp(/^([^\s]+\.|)ed\.ac\.uk$/);
+DomainData.prototype.extractDomain = function (domain) {
+    var parsedDomain = new url.parse(domain);
+    var hasProtocol = parsedDomain.protocol != undefined;
+    if (!hasProtocol) parsedDomain = url.parse("http://" + domain);
+    if (parsedDomain.hostname == undefined) return "";
+    var isEdAcUk = this.isEdAcUkRegex.test(parsedDomain.hostname);
+    if (!isEdAcUk) return "";
+    return parsedDomain.hostname;
 }
 
 DomainData.prototype.getXFromDomain = async function (x, domainName) {
@@ -59,8 +68,8 @@ DomainData.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
 }
 
 DomainData.prototype.addDomainCandidate = async function (domain, isNew, data) {
-    var parsedDomain = this.parseDomain(domain);
-    if (parsedDomain === null) return { "state": 3 };
+    var domain = this.extractDomain(domain);
+    if (domain === "") return { "state": 3 };
     if (this.domains[domain] !== undefined) return { "state": 1 };
 
     var candidate = new Domain(domain, this.db);
