@@ -72,9 +72,9 @@ var DomainListItem = function (domainJson, infoOutput) {
 	this.infoOutput = infoOutput;
 	this.initJson = domainJson;
 	this.tempId = (Math.random() * Math.pow(2,32)).toString(16);
-	this.dns = new RemoteProperty({state: domainJson.dns.state, lastUpdate: domainJson.dns.lastUpdate}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
-	this.ping = new RemoteProperty({state: domainJson.ping.state, lastUpdate: domainJson.ping.lastUpdate}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
-	this.http = new RemoteProperty({state: domainJson.http.state, lastUpdate: domainJson.http.lastUpdate}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
+	this.dns = new RemoteProperty({state: domainJson.dns.state, lastUpdate: domainJson.dns.lastUpdate}, this.getX.bind(this, "/v1/domains/" + this.domain + "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
+	this.ping = new RemoteProperty({state: domainJson.ping.state, lastUpdate: domainJson.ping.lastUpdate}, this.getX.bind(this, "/v1/domains/" + this.domain + "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
+	this.http = new RemoteProperty({state: domainJson.http.state, lastUpdate: domainJson.http.lastUpdate}, this.getX.bind(this, "/v1/domains/" + this.domain + "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
 	var match = this.domain.match(/(([^\s]+)\.|)ed\.ac\.uk$/);
 	this.hidden = false;
 	if (match === null) {
@@ -281,17 +281,18 @@ DomainList.prototype.addDomainItem = function (resJson) {
 		this.entries[resJson.name].update(resJson);
 	}
 }
-DomainList.prototype.askDomain = function (domain) {
+DomainList.prototype.askDomain = function (name) {
 	if (this.state >= 0) {
 		this.feedback.setState(-1);
 		var req = new XMLHttpRequest();
-		req.open("GET", "/add?domain="+domain);
+		req.open("POST", "/v1/domains");
+        req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		req.onreadystatechange = (function (req) {
 			if (req.readyState === 4) {
 				this.serverResponseControl(req.response);
 			}
 		}).bind(this, req);
-		req.send();
+		req.send("name=" + name);
 	} else {
 		console.log("State already running, wait until later.");
 	}
@@ -301,7 +302,7 @@ DomainList.prototype.getRemoteDomains = function () {
 		this.setState(-2);
 		this.info.resetFocus();
 		var req = new XMLHttpRequest();
-		req.open("GET", "/data?t=" + Date.now().toString(36));
+		req.open("GET", "/v1/domains?t=" + Date.now().toString(36));
 		req.onreadystatechange = (function (req) {
 			if (req.readyState === 4) {
 				this.setRemoteDomains(req.response);
@@ -327,7 +328,7 @@ DomainList.prototype.setRemoteDomains = function (res) {
 		}	
 	} catch (e) {
 		this.setState(5);
-		console.log(e, "Illegitimate output from server on /data endpoint.");
+		console.log(e, "Illegitimate output from server on /domains endpoint.");
 	}
 }
 DomainList.prototype.setMarkup = function (domains) {
