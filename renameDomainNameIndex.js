@@ -1,6 +1,6 @@
 var abstractdb = require("abstractdb");
 var Database = abstractdb("better-sqlite3");
-var db = new Database("app.db");
+var db = new Database("server/app.db");
 db.sRun("ALTER TABLE domains RENAME TO oldDomains");
 db.sRun(`CREATE TABLE domains (
     name TEXT PRIMARY KEY,
