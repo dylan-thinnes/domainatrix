@@ -50,10 +50,11 @@ DomainData.prototype.extractDomain = function (domain) {
     return parsedDomain.hostname;
 }
 
-DomainData.prototype.getXFromDomain = async function (x, domainName) {
+DomainData.prototype.updateXFromDomain = function (x, domainName) { return this.getXFromDomain(x, domainName, true); } 
+DomainData.prototype.getXFromDomain = async function (x, domainName, update) {
     var domain = this.domains[domainName];
     if (domain == undefined) return { "state": 2 };
-    await domain[x].update();
+    if (update === true) await domain[x].update();
     var res = {};
     res[x] = {};
     res[x]["state"] = domain[x].value;
@@ -92,7 +93,11 @@ DomainData.prototype.addDomainCandidate = async function (domain, isNew, data) {
     return { "state": 0, "data": candidate.toJson() };
 }
 
-DomainData.prototype.getJson = function () {
+DomainData.prototype.getJson = function (name) {
+    if (name != undefined) {
+        if (this.domains[name] == undefined) return;
+        return this.domains[name].toJson();
+    }
     var res = [];
     for (var ii = 0; ii < this.orderedDomains.length; ii++) {
         var index = this.orderedDomains[ii];

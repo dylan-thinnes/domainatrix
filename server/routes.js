@@ -7,20 +7,26 @@ const makeRoutes = async function () {
 	const domData = new DomainData();
     await domData.init();
 
-    app.get('/v1/domains/:name/dns', async (req, res, next) => {
+    app.put('/v1/domains/:name/dns', async (req, res, next) => {
         if (req.params.name == undefined) next();
-        var r = await domData.getXFromDomain('dns', req.params.name);
+        var r = await domData.updateXFromDomain('dns', req.params.name);
         res.json(r);
     });
-    app.get('/v1/domains/:name/ping', async (req, res, next) => {
+    app.put('/v1/domains/:name/ping', async (req, res, next) => {
         if (req.params.name == undefined) next();
-        var r = await domData.getXFromDomain('ping', req.params.name);
+        var r = await domData.updateXFromDomain('ping', req.params.name);
         res.json(r);
     });
-    app.get('/v1/domains/:name/http', async (req, res, next) => {
+    app.put('/v1/domains/:name/http', async (req, res, next) => {
         if (req.params.name == undefined) next();
-        var r = await domData.getXFromDomain('http', req.params.name);
+        var r = await domData.updateXFromDomain('http', req.params.name);
         res.json(r);
+    });
+    app.get('/v1/domains/:name', async (req, res, next) => {
+        if (req.params.name == undefined) next();
+        var r = domData.getJson(req.params.name);
+        if (r == undefined) next();
+        else res.json(r);
     });
 
     app.post('/v1/domains', async (req, res, next) => {

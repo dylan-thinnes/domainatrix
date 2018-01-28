@@ -116,7 +116,7 @@ DomainListItem.prototype.formatDate = function (timestamp) {
 }
 DomainListItem.prototype.getX = function (endpoint, callback) { 
 	var req = new XMLHttpRequest();
-	req.open("GET", endpoint + "?domain=" + this.domain);
+	req.open("PUT", endpoint);
 	req.onreadystatechange = (function (callback) {
 		if (this.readyState === 4) {
 			callback(req.response);
