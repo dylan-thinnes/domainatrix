@@ -7,7 +7,7 @@ const RemoteProperty = require("./remoteproperty");
 var DomainData = function () {
     this.domains = {}; 
     this.orderedDomains = [];
-    this.db = new Database("app.db");
+    this.db = new Database(__dirname + "/app.db");
     this.db.sRun(`CREATE TABLE IF NOT EXISTS domains (
         name TEXT PRIMARY KEY,
         dns INTEGER NOT NULL,
