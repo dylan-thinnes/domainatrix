@@ -1,40 +1,33 @@
 const express = require('express');
 const DomainData = require('./domaindata');
 
-const makeRoutes = () => {
+const makeRoutes = async function () {
 	const app = express();
 
-	// TODO: the internal structure of DomainData's "callback control" mechanism makes this janky
-	// wrapping in a promise is a temporary (but effective) solution
-	return new Promise((resolve, reject) => {
-		const domData = new DomainData(resolve.bind(this));
-	}).then(domData => {
-		app.get('/add', (req, res) => {
-			domData.addDomainCandidate(req.query.domain, true, r => {
-				res.json(r);
-			});
-		});
-		app.get('/dns', (req, res) => {
-			domData.getXFromDomain('dns', req.query.domain, r => {
-				res.json(r);
-			});
-		});
-		app.get('/ping', (req, res) => {
-			domData.getXFromDomain('ping', req.query.domain, r => {
-				res.json(r);
-			})
-		});
-		app.get('/http', (req, res) => {
-			domData.getXFromDomain('http', req.query.domain, r => {
-				res.json(r);
-			});
-		});
-		app.get('/data', (req, res) => {
-			res.json(domData.getJson());
-		});
+	const domData = new DomainData();
+    await domData.init();
 
-		return app;
-	});
+    app.get('/add', async (req, res) => {
+        var r = await domData.addDomainCandidate(req.query.domain, true);
+        res.json(r);
+    });
+    app.get('/dns', async (req, res) => {
+        var r = await domData.getXFromDomain('dns', req.query.domain);
+        res.json(r);
+    });
+    app.get('/ping', async (req, res) => {
+        var r = await domData.getXFromDomain('ping', req.query.domain);
+        res.json(r);
+    });
+    app.get('/http', async (req, res) => {
+        var r = await domData.getXFromDomain('http', req.query.domain);
+        res.json(r);
+    });
+    app.get('/data', (req, res) => {
+        res.json(domData.getJson());
+    });
+
+    return app;
 }
 
 exports = module.exports = { makeRoutes }
