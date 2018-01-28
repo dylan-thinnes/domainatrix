@@ -36,7 +36,12 @@ DomainData.prototype.parseExistingCandidates = async function (res) {
 
 DomainData.prototype.isEdAcUkRegex = new RegExp(/^([^\s]+\.|)ed\.ac\.uk$/);
 DomainData.prototype.extractDomain = function (domain) {
-    var parsedDomain = new url.parse(domain);
+    try {
+        var parsedDomain = new url.parse(domain);
+    } catch (e) {
+        if (e.code === "ERR_INVALID_ARG_TYPE") return "";
+        else throw e;
+    }
     var hasProtocol = parsedDomain.protocol != undefined;
     if (!hasProtocol) parsedDomain = url.parse("http://" + domain);
     if (parsedDomain.hostname == undefined) return "";
