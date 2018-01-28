@@ -25,22 +25,25 @@ Domain.prototype.getRemotePing = function (resolve, reject) {
     });
 }
 Domain.prototype.getRemoteHttp = function (resolve, reject) {
-    console.log("Getting remote http");
+    var connectionMade = false;
     var req = http.request({
         host: this.name,
+        hostname: this.name,
         path: "/",
         port: 80,
-        method: "GET"
+        method: "HEAD"
     }, (res) => {
-        resolve(true);
+        connectionMade = true;
+        resolve(connectionMade);
     });
     setTimeout(() => {
-        resolve(false);
+        resolve(connectionMade);
         req.abort();
     }, 10000);
-    req.on("error", (res) => { resolve(false); }); // Catches socket abortion error
-    req.on("abort", (res) => { resolve(false); });
-    req.on("timeout", (res) => { resolve(false); });
+    req.on("error", (res) => { resolve(connectionMade); }); // Catches socket abortion error
+    req.on("abort", (res) => { resolve(connectionMade); });
+    req.on("timeout", (res) => { resolve(connectionMade); });
+    req.end();
 }
 
 Domain.prototype.toJson = function () {
