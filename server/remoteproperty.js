@@ -18,7 +18,7 @@ RemoteProperty.DOES_NOT_EXIST = 1;
  * State -1 is processing or undetermined state
  * State -2 is never processed / not yet initialized state
  */
-RemoteProperty.UPDATE_THRESHOLD = 3600;
+RemoteProperty.UPDATE_THRESHOLD = process.argv.includes("-d") ? 0 : 3600;
 
 // Override the base primitive value evaluation of this object
 RemoteProperty.prototype.valueOf = function () {
