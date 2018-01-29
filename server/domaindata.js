@@ -33,25 +33,18 @@ DomainData.prototype.init = async function () {
 DomainData.prototype.parseExistingCandidates = async function (res) {
     var candidacies = [];
     for (var ii = 0; ii < res.length; ii++) {
-        candidacies[this.addDomainCandidate(res[ii]["name"], false, res[ii])];
+        candidacies[this.addDomainCandidate(res[ii]["name"], res[ii])];
     }
     await Promise.all(candidacies);
 }
 
-DomainData.prototype.isEdAcUkRegex = new RegExp(/^([^\s]+\.|)ed\.ac\.uk$/);
-DomainData.prototype.extractDomain = function (domain) {
-    try {
-        var parsedDomain = new url.parse(domain);
-    } catch (e) {
-        if (e.code === "ERR_INVALID_ARG_TYPE") return "";
-        else throw e;
-    }
-    var hasProtocol = parsedDomain.protocol != undefined;
-    if (!hasProtocol) parsedDomain = url.parse("http://" + domain);
-    if (parsedDomain.hostname == undefined) return "";
-    var isEdAcUk = this.isEdAcUkRegex.test(parsedDomain.hostname);
-    if (!isEdAcUk) return "";
-    return parsedDomain.hostname;
+DomainData.prototype.edAcUkSearch = new RegExp(/(?![^A-Za-z0-9\-])([A-Za-z0-9\-\.]+\.|)ed\.ac\.uk(?=[^A-Za-z0-9\-])/g);
+DomainData.prototype.extractDomains = function (searchString) {
+    searchString = " " + searchString + " ";
+    var matches = searchString.match(this.edAcUkSearch);
+    for (var ii in matches) matches[ii] = matches[ii].toLowerCase();
+    if (matches == undefined) matches = [];
+    return matches;
 }
 
 DomainData.prototype.updateXFromDomain = function (x, domainName) { return this.getXFromDomain(x, domainName, true); } 
@@ -68,8 +61,8 @@ DomainData.prototype.getXFromDomain = async function (x, domainName, update) {
 }
 
 DomainData.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRight) {
-    subsetLeft = subsetLeft !== undefined ? subsetLeft : 0;
-    subsetRight = subsetRight !== undefined ? subsetRight : this.orderedDomains.length;
+    subsetLeft = subsetLeft != undefined ? subsetLeft : 0;
+    subsetRight = subsetRight != undefined ? subsetRight : this.orderedDomains.length;
     while (subsetLeft !== subsetRight) {
         var checkDomain = this.orderedDomains[subsetLeft + Math.floor((subsetRight - subsetLeft) / 2)];
         if (checkDomain > domain) subsetRight = subsetLeft + Math.floor((subsetRight - subsetLeft) / 2);
@@ -78,24 +71,28 @@ DomainData.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
     return subsetLeft;
 }
 
-DomainData.prototype.addDomainCandidate = async function (domain, isNew, data) {
-    var domain = this.extractDomain(domain);
-    if (domain === "") return { "state": 3 };
-    if (this.domains[domain] !== undefined) return { "state": 1 };
+DomainData.prototype.addDomainCandidates = async function (s) {
+    var names = this.extractDomains(s);
+    var candidates = [];
+    for (var ii in names) candidates.push(this.addDomainCandidate(names[ii]));
+    return await Promise.all(candidates);
+}
+DomainData.prototype.addDomainCandidate = async function (name, data) {
+    if (this.domains[name] != undefined) return { "name": name, "state": 1 };
 
-    var candidate = new Domain(domain, this.db);
-    if (isNew === false) candidate.setFromDb(data);
+    var candidate = new Domain(name, this.db);
+    if (data != undefined && typeof data === "object") candidate.setFromDb(data);
     else {
         await candidate.dns.update();
         if (candidate.dns.get() === RemoteProperty.DOES_NOT_EXIST) {
             candidate.delete();
             delete candidate;
-            return {"state": 2};
+            return { "name": name, "state": 2};
         }
     }
-    this.domains[domain] = candidate;
-    this.orderedDomains.splice(this.findOrderedIndex(domain), 0, domain);
-    return { "state": 0, "data": candidate.toJson() };
+    this.domains[name] = candidate;
+    this.orderedDomains.splice(this.findOrderedIndex(name), 0, name);
+    return { "name": name, "state": 0, "data": candidate.toJson() };
 }
 
 DomainData.prototype.getJson = function (name) {

@@ -288,7 +288,7 @@ DomainList.prototype.setState = function (state) {
 DomainList.prototype.handleInputKeys = function (e) {
 	if (e.keyCode === 13) {
 		e.preventDefault();
-		this.askDomain(this.inputNode.value);
+		this.submitDomains(this.inputNode.value);
 	}
 }
 DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRight) {
@@ -321,7 +321,7 @@ DomainList.prototype.addDomainItem = function (resJson) {
 		this.entries[resJson.name].update(resJson);
 	}
 }
-DomainList.prototype.askDomain = function (name) {
+DomainList.prototype.submitDomains = function (names) {
 	if (this.state >= 0) {
 		this.feedback.setState(-1);
 		var req = new XMLHttpRequest();
@@ -332,7 +332,7 @@ DomainList.prototype.askDomain = function (name) {
 				this.serverResponseControl(req.response);
 			}
 		}).bind(this, req);
-		req.send("name=" + name);
+		req.send("names=" + names);
 	} else {
 		console.log("State already running, wait until later.");
 	}
