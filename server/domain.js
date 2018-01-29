@@ -2,16 +2,25 @@ const dns = require('dns');
 const http = require('http');
 const ping = require('ping');
 const RemoteProperty = require('./remoteproperty');
+const DomainData = require('./domaindata');
 
-var Domain = function (name, db) {
+var Domain = function (name, db, addDomainCandidates) {
     this.name = name;
     this.db = db;
     this.dns =  new RemoteProperty(this.writeState.bind(this, "dns"),  this.getRemoteDns.bind(this));
     this.ping = new RemoteProperty(this.writeState.bind(this, "ping"), this.getRemotePing.bind(this));
     this.http = new RemoteProperty(this.writeState.bind(this, "http"), this.getRemoteHttp.bind(this));
+    this.addDomainCandidates = addDomainCandidates;
+    this.children = [];
 }
 exports = module.exports = Domain;
 
+Domain.prototype.addChild = async function (name) {
+    console.log("Searching for children of name ", name);
+    var newChildren = await this.addDomainCandidates(name);
+    console.log("Total of " + newChildren.length + " children found.");
+    console.log(newChildren);
+}
 Domain.prototype.getRemoteDns = function (resolve, reject) {
     var name = this.name;
     var promisedDnsResolve = function (rrtype) {
@@ -33,18 +42,30 @@ Domain.prototype.getRemoteDns = function (resolve, reject) {
         promisedDnsResolve("TXT"),
         promisedDnsResolve("NAPTR"),
         promisedDnsResolve("PTR")
-    ]).then((results) => {
+    ]).then((function (results) {
         var resultExists = false;
-        console.log(results);
         var finalResults = {};
         for (var ii in results) {
             if (results[ii] == undefined || results[ii].records.length === 0) continue;
             finalResults[results[ii].type] = results[ii].records;
+            var type = results[ii].type;
+            var records = finalResults[results[ii].type];
+            for (var jj in records) {
+                if (type === "A" || type === "AAAA" || type === "CNAME" || type === "PTR" || type === "NS") this.addChild(records[jj]);
+                else if (type === "TXT") this.addChild(records[jj].join(" "));
+                else if (type === "SRV") this.addChild(records[jj].name);
+                else if (type === "SOA") {
+                    this.addChild(records[jj].nsname);
+                    this.addChild(records[jj].hostmaster);
+                }
+                else if (type === "NAPTR") this.addChild(records[jj].replacement);
+                else if (type === "MX") this.addChild(records[jj].exchange);
+            }
             resultExists = true;
         }
         if (resultExists) resolve(finalResults);
         else resolve();
-    });
+    }).bind(this));
 }
 Domain.prototype.getRemotePing = function (resolve, reject) {
     ping.promise.probe(this.name, {
@@ -56,6 +77,7 @@ Domain.prototype.getRemotePing = function (resolve, reject) {
     });
 }
 Domain.prototype.getRemoteHttp = function (resolve, reject) {
+    var statusCode;
     var req = http.request({
         host: this.name,
         hostname: this.name,
@@ -67,10 +89,14 @@ Domain.prototype.getRemoteHttp = function (resolve, reject) {
         resolve();
         req.abort();
     }, 10000);
-    req.on("error", (res) => { resolve(); }); // Catches socket abortion error
-    req.on("abort", (res) => { resolve(); });
-    req.on("timeout", (res) => { resolve(); });
-    req.on("response", (res) => { resolve(res.statusCode); });
+    req.on("error", (res) => { resolve(statusCode); }); // Catches socket abortion error
+    req.on("abort", (res) => { resolve(statusCode); });
+    req.on("timeout", (res) => { resolve(statusCode); });
+    req.on("response", (function (res) {
+        statusCode = res.statusCode;
+        if (statusCode >= 300 && statusCode < 400 && res.headers.location != undefined) this.addChild(res.headers.location);
+        resolve(statusCode);
+    }).bind(this));
     req.end();
 }
 

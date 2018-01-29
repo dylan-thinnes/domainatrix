@@ -103,7 +103,7 @@ DomainData.prototype.addDomainCandidates = async function (s) {
 DomainData.prototype.addDomainCandidate = async function (name, data) {
     if (this.domains[name] != undefined) return { "name": name, "state": 1 };
 
-    var candidate = new Domain(name, this.db);
+    var candidate = new Domain(name, this.db, this.addDomainCandidates.bind(this));
     if (data != undefined && typeof data === "object") candidate.setFromDb(data);
     else {
         await candidate.dns.update();
