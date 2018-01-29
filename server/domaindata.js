@@ -10,11 +10,15 @@ var DomainData = function () {
     this.db = new Database(__dirname + "/app.db");
     this.db.sRun(`CREATE TABLE IF NOT EXISTS domains (
         name TEXT PRIMARY KEY,
-        dns INTEGER NOT NULL,
-        dnsLastCheck INTEGER NOT NULL,
-        ping INTEGER NOT NULL,
-        pingLastCheck INTEGER NOT NULL,
-        http INTEGER NOT NULL,
+        dns STRING,
+        dnsState INTEGER NOT NULL,
+        dnsLastUpdate INTEGER NOT NULL,
+        ping STRING,
+        pingState INTEGER NOT NULL,
+        pingLastUpdate INTEGER NOT NULL,
+        http STRING,
+        httpState INTEGER NOT NULL,
+        httpLastUpdate INTEGER NOT NULL,
         httpLastCheck INTEGER NOT NULL
     )`);
 }

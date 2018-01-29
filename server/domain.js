@@ -95,24 +95,28 @@ Domain.prototype.toJson = function () {
     }
 }
 Domain.prototype.toDb = function (propertyName) {
-    var res = { $name: this.name }
-    res["$prop"] = this[propertyName].state;
-    res["$propLastUpdate"] = this[propertyName].lastUpdate;
-    return res;
+    var params = { $name: this.name }
+    params["$prop"] = propertyName === "dns" ? JSON.stringify(this[propertyName].value) : this[propertyName].value;
+    params["$propState"] = this[propertyName].state;
+    params["$propLastUpdate"] = this[propertyName].lastUpdate;
+    return params;
 }
 
 Domain.prototype.setFromDb = function (data) {
-    this.dns.state = data.dns;
+    this.dns.value = JSON.parse(data.dns);
+    this.dns.state = data.dnsState;
     this.dns.lastUpdate = data.dnsLastUpdate;
-    this.ping.state = data.ping;
+    this.ping.value = data.ping;
+    this.ping.state = data.pingState;
     this.ping.lastUpdate = data.pingLastUpdate;
-    this.http.state = data.http;
+    this.http.value = data.http;
+    this.http.state = data.httpState;
     this.http.lastUpdate = data.httpLastUpdate;
 }
 
 Domain.prototype.writeState = async function (propertyName) {
     var dbParams = this.toDb(propertyName);
-    await this.db.aRun("UPDATE domains SET " + propertyName + " = $prop, " + propertyName + "LastUpdate = $propLastUpdate WHERE name = $name", dbParams);
+    await this.db.aRun("UPDATE domains SET " + propertyName + " = $prop, " + propertyName + "State = $propState, " + propertyName + "LastUpdate = $propLastUpdate WHERE name = $name", dbParams);
 }
 Domain.prototype.delete = async function () {
     await this.db.aRun("DELETE FROM domains WHERE name = $name", {$name: this.name});
