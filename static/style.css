@@ -14,15 +14,25 @@ body {
   overflow: hidden; }
 
 * {
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  font-size: inherit;
+  font-family: inherit; }
 
-.page > .list > .item:hover, .page > .input > input[type=text]:hover {
+.button:hover, .page > .list > .item:hover, .page > .input > input[type=text]:hover {
   background-color: #eee; }
-.page > .list > .item:active, .page > .input > input[type=text]:active {
+.button:active, .page > .list > .item:active, .page > .input > input[type=text]:active {
   background-color: #ddd;
   color: #000; }
-.page > .list > .item:focus, .page > .input > input[type=text]:focus {
+.button:focus, .page > .list > .item:focus, .page > .input > input[type=text]:focus {
   border-bottom-color: #111; }
+
+.button {
+  cursor: pointer; }
+
+.button.box {
+  text-align: center;
+  border-radius: 0.25rem;
+  border: 1px solid #999; }
 
 .hide {
   display: none; }
@@ -32,17 +42,15 @@ body {
   padding: 3pt;
   display: flex;
   flex-direction: column; }
-  .page > .title {
+  .page .title {
     font-size: 20pt; }
-  .page > .centered {
+  .page .centered {
     text-align: center; }
-  .page > .padded {
+  .page .padded {
     margin-top: 0.4rem; }
-  .page > .accent {
-    font-size: 9pt;
-    color: #444;
-    text-decoration: underline; }
-  .page > .divider {
+  .page .accent {
+    font-size: 9pt; }
+  .page .divider {
     border-bottom: 1px solid #111;
     margin: 4pt 0 4pt 0; }
   .page > .list {
@@ -50,7 +58,9 @@ body {
     height: 0;
     padding: 0;
     margin: 0;
-    padding: 0; }
+    padding: 0;
+    overflow-y: scroll;
+    overflow-x: hidden; }
     .page > .list > .item {
       white-space: nowrap;
       cursor: pointer; }
@@ -64,8 +74,35 @@ body {
       border: 0;
       background-color: transparent;
       border-bottom: 1px solid #999;
-      font-family: inherit;
       outline: none; }
+    .page > .input :nth-child(2) {
+      margin-left: 1ch; }
+  .page > #domainInfo .domainInfoRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 9pt;
+    padding: 1pt 0 1pt 0; }
+  .page > #domainInfo .domainInfoGet {
+    margin-right: 0.5ch;
+    width: 10ch;
+    height: 1.5em;
+    align-self: center; }
+  .page > #domainInfo .goToDomain {
+    width: 20ch;
+    color: #111;
+    text-decoration: none; }
+  .page > #domainInfo .info {
+    border-left: 1px solid #111;
+    padding-left: 0.5ch; }
+  .page > #updateDomainList {
+    width: 20ch;
+    height: 2rem;
+    align-self: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center; }
   .page > #credit {
     margin-top: 0.4rem;
     font-size: 9pt;
