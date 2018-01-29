@@ -3,6 +3,8 @@ const Domain = require('./domain');
 const abstractdb = require("abstractdb");
 const Database = abstractdb("better-sqlite3");
 const RemoteProperty = require("./remoteproperty");
+const dns = require("dns");
+const util = require("util");
 
 var DomainData = function () {
     this.domains = {}; 
@@ -39,12 +41,33 @@ DomainData.prototype.parseExistingCandidates = async function (res) {
 }
 
 DomainData.prototype.edAcUkSearch = new RegExp(/(?![^A-Za-z0-9\-])([A-Za-z0-9\-\.]+\.|)ed\.ac\.uk(?=[^A-Za-z0-9\-])/g);
-DomainData.prototype.extractDomains = function (searchString) {
+DomainData.prototype.ipV4AddrSearch = new RegExp(/((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])/g);
+DomainData.prototype.ipV6AddrSearch = new RegExp(/(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/g);
+DomainData.prototype.extractDomains = async function (searchString) {
     searchString = " " + searchString + " ";
-    var matches = searchString.match(this.edAcUkSearch);
-    for (var ii in matches) matches[ii] = matches[ii].toLowerCase();
-    if (matches == undefined) matches = [];
-    return matches;
+    var domainMatches = searchString.match(this.edAcUkSearch);
+    for (var ii in domainMatches) domainMatches[ii] = domainMatches[ii].toLowerCase();
+    if (domainMatches == undefined) domainMatches = [];
+
+    var ipV4Matches = searchString.match(this.ipV4AddrSearch);
+    console.log(ipV4Matches);
+    if (ipV4Matches == undefined) ipV4Matches = [];
+    var ipV6Matches = searchString.match(this.ipV6AddrSearch);
+    console.log(ipV6Matches);
+    if (ipV6Matches == undefined) ipV6Matches = [];
+    var ipMatches = ipV4Matches.concat(ipV6Matches);
+    console.log(ipMatches);
+    var promisedReverse = util.promisify(dns.reverse);
+    for (var ii in ipMatches) {
+        try {
+            var reverseResult = await promisedReverse(ipMatches[ii]);
+        } catch (e) {
+            continue;
+        }
+        domainMatches = domainMatches.concat(reverseResult);
+    }
+
+    return domainMatches;
 }
 
 DomainData.prototype.updateXFromDomain = function (x, domainName) { return this.getXFromDomain(x, domainName, true); } 
@@ -72,7 +95,7 @@ DomainData.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
 }
 
 DomainData.prototype.addDomainCandidates = async function (s) {
-    var names = this.extractDomains(s);
+    var names = await this.extractDomains(s);
     var candidates = [];
     for (var ii in names) candidates.push(this.addDomainCandidate(names[ii]));
     return await Promise.all(candidates);
