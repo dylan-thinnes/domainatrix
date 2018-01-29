@@ -1,11 +1,13 @@
 'use strict';
-var RemoteProperty = function (initValue, checker, parser, change, limit, startCallback, getRemote, initCallback) {
+var RemoteProperty = function (initJson, checker, parser, change, limit, startCallback, getRemote, initCallback) {
 	this.checker = checker ? checker : ()=>{};
 	this.parser = parser ? parser : function () {return arguments};
 	this.change = change ? change : ()=>{};
 	this.initCallback = initCallback ? initCallback : ()=>{};
 	this.gettingRemote = false;
-	this.value = initValue;
+	this.value = initJson.value;
+	this.state = initJson.state;
+	this.lastUpdate = initJson.lastUpdate;
 	this.callbacks = [];
 	this.startCallback = startCallback ? startCallback : ()=>{};
 	this.lastCall = 0;
@@ -29,9 +31,11 @@ RemoteProperty.prototype.getRemote = function (callback) {
 	}
 }
 RemoteProperty.prototype.setValue = function () {
-	var oldVar = this.value;
-	this.value = this.parser.apply(this, arguments);
-	if (this.value !== oldVar) this.change(this.value);
+	var newData = this.parser.apply(this, arguments);
+    this.value = newData.value;
+    this.state = newData.state;
+    this.lastUpdate = newData.update;
+	this.change(newData);
 	this.runCallbacks();
 }
 RemoteProperty.prototype.runCallbacks = function () {
@@ -72,9 +76,9 @@ var DomainListItem = function (domainJson, infoOutput) {
 	this.infoOutput = infoOutput;
 	this.initJson = domainJson;
 	this.tempId = (Math.random() * Math.pow(2,32)).toString(16);
-	this.dns = new RemoteProperty({state: domainJson.dns.state, lastUpdate: domainJson.dns.lastUpdate}, this.getX.bind(this, "/v1/domains/" + this.domain + "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
-	this.ping = new RemoteProperty({state: domainJson.ping.state, lastUpdate: domainJson.ping.lastUpdate}, this.getX.bind(this, "/v1/domains/" + this.domain + "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
-	this.http = new RemoteProperty({state: domainJson.http.state, lastUpdate: domainJson.http.lastUpdate}, this.getX.bind(this, "/v1/domains/" + this.domain + "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
+	this.dns = new RemoteProperty(domainJson.dns, this.getX.bind(this, "/v1/domains/" + this.domain + "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
+	this.ping = new RemoteProperty(domainJson.ping, this.getX.bind(this, "/v1/domains/" + this.domain + "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
+	this.http = new RemoteProperty(domainJson.http, this.getX.bind(this, "/v1/domains/" + this.domain + "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
 	var match = this.domain.match(/(([^\s]+)\.|)ed\.ac\.uk$/);
 	this.hidden = false;
 	if (match === null) {
@@ -92,7 +96,7 @@ var DomainListItem = function (domainJson, infoOutput) {
 	this.focused = false;
 }
 DomainListItem.prototype.domString = function (styling) {
-	return `<li class="item" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.value.state] + `" class="domainDns">----</span>|<span style="background-color: ` + this.colorCode[this.ping.value.state] + `" class="domainPing">----</span>|<span style="background-color: ` + this.colorCode[this.http.value.state] + `" class="domainHttp">----</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
+	return `<li class="item" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.state] + `" class="domainDns">----</span>|<span style="background-color: ` + this.colorCode[this.ping.state] + `" class="domainPing">----</span>|<span style="background-color: ` + this.colorCode[this.http.state] + `" class="domainHttp">----</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
 }
 DomainListItem.prototype.initializeNodes = function (root) {
 	this.nodes = {};
@@ -102,10 +106,10 @@ DomainListItem.prototype.initializeNodes = function (root) {
 	this.nodes.dns = this.nodes.root.children[0];
 	this.nodes.ping = this.nodes.root.children[1];
 	this.nodes.http = this.nodes.root.children[2];
-	if (this.ping.value.lastUpdate === 0 || this.ping.value.state === -1 || this.ping.value.state === -2) {
+	if (this.ping.lastUpdate === 0 || this.ping.state === -1 || this.ping.state === -2) {
 		this.ping.getRemote(console.log.bind(this, "ping update ran due to 0 lastUpdate"));
 	}
-	if (this.http.value.lastUpdate === 0 || this.http.value.state === -1 || this.http.value.state === -2) {
+	if (this.http.lastUpdate === 0 || this.http.state === -1 || this.http.state === -2) {
 		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastUpdate"));
 	}
 }
@@ -138,30 +142,33 @@ DomainListItem.prototype.colorCode = {
 }
 DomainListItem.prototype.setDns = function (newDns) {
 	if (newDns !== undefined) {
-		this.dns.value.state = newDns.state !== undefined ? newDns.state : this.dns.value.state;
-		this.dns.value.lastUpdate = newDns.lastUpdate !== undefined ? newDns.lastUpdate : this.dns.value.lastUpdate;
+		this.dns.value = newDns.value !== undefined ? newDns.value : this.dns.value;
+		this.dns.state = newDns.state !== undefined ? newDns.state : this.dns.state;
+		this.dns.lastUpdate = newDns.lastUpdate !== undefined ? newDns.lastUpdate : this.dns.lastUpdate;
 	}
-	this.nodes.dns.style.backgroundColor = this.colorCode[this.dns.value.state];
-	//this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.value.lastUpdate);
-	if (this.focused === true) this.infoOutput.setDns(this.dns.value.state, this.formatDate(this.dns.value.lastUpdate));
+	this.nodes.dns.style.backgroundColor = this.colorCode[this.dns.state];
+	//this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.lastUpdate);
+	if (this.focused === true) this.infoOutput.setDns(this.dns.state, this.formatDate(this.dns.lastUpdate));
 }
 DomainListItem.prototype.setPing = function (newPing) {
 	if (newPing !== undefined) {
-		this.ping.value.state = newPing.state !== undefined ? newPing.state : this.ping.value.state;
-		this.ping.value.lastUpdate = newPing.lastUpdate !== undefined ? newPing.lastUpdate : this.ping.value.lastUpdate;
+		this.ping.value = newPing.value !== undefined ? newPing.value : this.ping.value;
+		this.ping.state = newPing.state !== undefined ? newPing.state : this.ping.state;
+		this.ping.lastUpdate = newPing.lastUpdate !== undefined ? newPing.lastUpdate : this.ping.lastUpdate;
 	}
-	this.nodes.ping.style.backgroundColor = this.colorCode[this.ping.value.state];
-	//this.nodes.pingLastCheck.innerHTML = "Ping Last Checked: " + this.formatDate(this.ping.value.lastUpdate);
-	if (this.focused === true) this.infoOutput.setPing(this.ping.value.state, this.formatDate(this.ping.value.lastUpdate));
+	this.nodes.ping.style.backgroundColor = this.colorCode[this.ping.state];
+	//this.nodes.pingLastCheck.innerHTML = "Ping Last Checked: " + this.formatDate(this.ping.lastUpdate);
+	if (this.focused === true) this.infoOutput.setPing(this.ping.state, this.formatDate(this.ping.lastUpdate));
 }
 DomainListItem.prototype.setHttp = function (newHttp) {
 	if (newHttp !== undefined) {
-		this.http.value.state = newHttp.state !== undefined ? newHttp.state : this.http.value.state;
-		this.http.value.lastUpdate = newHttp.lastUpdate !== undefined ? newHttp.lastUpdate : this.http.value.lastUpdate;
+		this.http.value = newHttp.value !== undefined ? newHttp.value : this.http.value;
+		this.http.state = newHttp.state !== undefined ? newHttp.state : this.http.state;
+		this.http.lastUpdate = newHttp.lastUpdate !== undefined ? newHttp.lastUpdate : this.http.lastUpdate;
 	}
-	this.nodes.http.style.backgroundColor = this.colorCode[this.http.value.state];
-	//this.nodes.httpLastCheck.innerHTML = "HTTP Last Checked: " + this.formatDate(this.http.value.lastUpdate);
-	if (this.focused === true) this.infoOutput.setHttp(this.http.value.state, this.formatDate(this.http.value.lastUpdate));
+	this.nodes.http.style.backgroundColor = this.colorCode[this.http.state];
+	//this.nodes.httpLastCheck.innerHTML = "HTTP Last Checked: " + this.formatDate(this.http.lastUpdate);
+	if (this.focused === true) this.infoOutput.setHttp(this.http.state, this.formatDate(this.http.lastUpdate));
 }
 DomainListItem.prototype.hide = function () {
 	this.nodes.root.style.display = "none";
