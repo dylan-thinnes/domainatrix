@@ -96,7 +96,7 @@ var DomainListItem = function (domainJson, infoOutput) {
 	this.focused = false;
 }
 DomainListItem.prototype.domString = function (styling) {
-	return `<li class="item" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.state] + `" class="domainDns">----</span>|<span style="background-color: ` + this.colorCode[this.ping.state] + `" class="domainPing">----</span>|<span style="background-color: ` + this.colorCode[this.http.state] + `" class="domainHttp">----</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
+	return `<li class="item" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.state] + `" class="domainDns">` + this.formatDns() + `</span>|<span style="background-color: ` + this.colorCode[this.ping.state] + `" class="domainPing">` + this.formatPing() + `</span>|<span style="background-color: ` + this.colorCode[this.http.state] + `" class="domainHttp">` + this.formatHttp() + `</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
 }
 DomainListItem.prototype.initializeNodes = function (root) {
 	this.nodes = {};
@@ -112,6 +112,36 @@ DomainListItem.prototype.initializeNodes = function (root) {
 	if (this.http.lastUpdate === 0 || this.http.state === -1 || this.http.state === -2) {
 		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastUpdate"));
 	}
+}
+DomainListItem.prototype.formatPing = function () {
+    if (this.ping.state !== 0 || this.ping.value == undefined) return "-----";
+    var suffix = "ms";
+    var value = this.ping.value;
+    if (value < 1000) suffix = "us";
+    else if (value < 10000) {
+        value = Math.floor(value / 100) / 10;
+        if (value === parseInt(value)) value = value.toString() + ".0"
+    } else if (value < 1000000) value = Math.floor(value / 1000);
+    else {
+        value = Math.floor(value / 1000000);
+        suffix = "s";
+    }
+    var result = value.toString() + suffix;
+    return result.padStart(5, " ");
+}
+DomainListItem.prototype.formatHttp = function () {
+    if (this.http.state !== 0 || this.http.value == undefined) return "----";
+    return " " + this.http.value.toString();
+}
+DomainListItem.prototype.formatDns = function () {
+    if (this.dns.state !== 0 || this.dns.value == undefined) return "-----";
+    var result = "";
+    result += this.dns.value["A"]     == undefined ? " " : "4";
+    result += this.dns.value["AAAA"]  == undefined ? " " : "6";
+    result += this.dns.value["CNAME"] == undefined ? " " : "C";
+    result += this.dns.value["MX"]    == undefined ? " " : "M";
+    result += this.dns.value["TXT"]   == undefined ? " " : "T";
+    return result;
 }
 DomainListItem.prototype.formatDate = function (timestamp) {
 	if (timestamp === 0) return "Still Checking";
@@ -147,6 +177,7 @@ DomainListItem.prototype.setDns = function (newDns) {
 		this.dns.lastUpdate = newDns.lastUpdate !== undefined ? newDns.lastUpdate : this.dns.lastUpdate;
 	}
 	this.nodes.dns.style.backgroundColor = this.colorCode[this.dns.state];
+    this.nodes.dns.innerHTML = this.formatDns();
 	//this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.lastUpdate);
 	if (this.focused === true) this.infoOutput.setDns(this.dns.state, this.formatDate(this.dns.lastUpdate));
 }
@@ -157,6 +188,7 @@ DomainListItem.prototype.setPing = function (newPing) {
 		this.ping.lastUpdate = newPing.lastUpdate !== undefined ? newPing.lastUpdate : this.ping.lastUpdate;
 	}
 	this.nodes.ping.style.backgroundColor = this.colorCode[this.ping.state];
+    this.nodes.ping.innerHTML = this.formatPing();
 	//this.nodes.pingLastCheck.innerHTML = "Ping Last Checked: " + this.formatDate(this.ping.lastUpdate);
 	if (this.focused === true) this.infoOutput.setPing(this.ping.state, this.formatDate(this.ping.lastUpdate));
 }
@@ -167,6 +199,7 @@ DomainListItem.prototype.setHttp = function (newHttp) {
 		this.http.lastUpdate = newHttp.lastUpdate !== undefined ? newHttp.lastUpdate : this.http.lastUpdate;
 	}
 	this.nodes.http.style.backgroundColor = this.colorCode[this.http.state];
+    this.nodes.http.innerHTML = this.formatHttp();
 	//this.nodes.httpLastCheck.innerHTML = "HTTP Last Checked: " + this.formatDate(this.http.lastUpdate);
 	if (this.focused === true) this.infoOutput.setHttp(this.http.state, this.formatDate(this.http.lastUpdate));
 }

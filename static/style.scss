@@ -62,17 +62,14 @@ body {
         border-bottom: 1px solid #111;
         margin: 4pt 0 4pt 0;
     }
+    .item { white-space: pre; }
     > .list {
         @include flex-height(1);
         margin: 0;
         padding: 0;
         overflow-y: scroll;
         overflow-x: hidden;
-        > .item {
-            @extend %button;
-            white-space: nowrap;
-            cursor: pointer;
-        }
+        > .item { @extend .button; }
     }
     > .input {
         display: flex;
