@@ -1,7 +1,10 @@
+const util = require("util");
+
 var RemoteProperty = function (onChangeCallback, remoteGetter) {
     this.onChangeCallback = onChangeCallback;
     this.remoteGetter = remoteGetter;
-    this.value = RemoteProperty.NEVER_STARTED;
+    this.state = RemoteProperty.NEVER_STARTED;
+    this.value = undefined;
     this.lastUpdate = 0;
 }
 exports = module.exports = RemoteProperty;
@@ -19,13 +22,14 @@ RemoteProperty.UPDATE_THRESHOLD = 3600;
 
 // Override the base primitive value evaluation of this object
 RemoteProperty.prototype.valueOf = function () {
-    return this.value;
+    return this.state;
 }
 
 RemoteProperty.prototype.set = async function (newValue, noTriggerChangeCallback) {
-    var oldValue = this.value;
+    this.state = newValue != undefined ? RemoteProperty.DOES_EXIST : RemoteProperty.DOES_NOT_EXIST;
+    if (util.isDeepStrictEqual(this.value, newValue)) return;
     this.value = newValue;
-    if (oldValue !== this.value && this.value >= 0 && noTriggerChangeCallback !== true) await this.onChangeCallback();
+    if (noTriggerChangeCallback !== true) await this.onChangeCallback();
 }
 RemoteProperty.prototype.get = function () {
     return this.value;
@@ -35,8 +39,8 @@ RemoteProperty.prototype.update = async function () { // Returns boolean depende
     if (Date.now() < this.lastUpdate + RemoteProperty.UPDATE_THRESHOLD) return false; // Abort if last update was too recent.
     this.lastUpdate = currTime;
 
-    this.set(RemoteProperty.IN_PROGRESS);
-    var valueExists = await new Promise(this.remoteGetter);
-    await this.set(valueExists ? RemoteProperty.DOES_EXIST : RemoteProperty.DOES_NOT_EXIST);
+    this.state = RemoteProperty.IN_PROGRESS;
+    var newValue = await new Promise(this.remoteGetter);
+    await this.set(newValue);
     return true;
 }

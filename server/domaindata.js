@@ -57,7 +57,8 @@ DomainData.prototype.getXFromDomain = async function (x, domainName, update) {
     if (update === true) await domain[x].update();
     var res = {};
     res[x] = {};
-    res[x]["state"] = domain[x].value;
+    res[x]["value"] = domain[x].value;
+    res[x]["state"] = domain[x].state;
     res[x]["lastUpdate"] = domain[x].lastUpdate;
     return res;
 }
