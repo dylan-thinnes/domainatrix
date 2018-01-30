@@ -20,8 +20,7 @@ var DomainData = function () {
         pingLastUpdate INTEGER NOT NULL,
         http STRING,
         httpState INTEGER NOT NULL,
-        httpLastUpdate INTEGER NOT NULL,
-        httpLastCheck INTEGER NOT NULL
+        httpLastUpdate INTEGER NOT NULL
     )`);
 }
 exports = module.exports = DomainData;
@@ -106,12 +105,15 @@ DomainData.prototype.addDomainCandidate = async function (name, data) {
     var candidate = new Domain(name, this.db, this.addDomainCandidates.bind(this));
     if (data != undefined && typeof data === "object") candidate.setFromDb(data);
     else {
+        await candidate.create();
         await candidate.dns.update();
-        if (candidate.dns.get() === RemoteProperty.DOES_NOT_EXIST) {
+        if (candidate.dns.state === RemoteProperty.DOES_NOT_EXIST) {
             candidate.delete();
             delete candidate;
             return { "name": name, "state": 2};
         }
+        candidate.ping.update();
+        candidate.http.update();
     }
     this.domains[name] = candidate;
     this.orderedDomains.splice(this.findOrderedIndex(name), 0, name);

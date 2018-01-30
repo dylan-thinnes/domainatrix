@@ -147,3 +147,9 @@ Domain.prototype.writeState = async function (propertyName) {
 Domain.prototype.delete = async function () {
     await this.db.aRun("DELETE FROM domains WHERE name = $name", {$name: this.name});
 }
+Domain.prototype.create = async function () {
+    await this.db.aRun("INSERT INTO domains VALUES ($name, $f, $f, $f, $f, $f, $f, $f, $f, $f)", {
+        $name: this.name,
+        $f: 0
+    });
+}
