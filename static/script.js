@@ -117,7 +117,7 @@ DomainListItem.prototype.formatPing = function () {
     if (this.ping.state !== 0 || this.ping.value == undefined) return "-----";
     var suffix = "ms";
     var value = this.ping.value;
-    if (value < 1000) suffix = "us";
+    if (value < 1000) suffix = "&#956;s";
     else if (value < 10000) {
         value = Math.floor(value / 100) / 10;
         if (value === parseInt(value)) value = value.toString() + ".0"
@@ -381,11 +381,16 @@ DomainList.prototype.setMarkup = function (domains) {
 }
 DomainList.prototype.serverResponseControl = function (res) {
 	try {
-		var resJson = JSON.parse(res);
-		this.setState(resJson.state);
-		if (resJson.state === 0) {
-			this.addDomainItem(resJson.data);
-		}
+        var res = JSON.parse(res);
+        var singleRes;
+        var resLength = res.length;
+        for (var ii = 0; ii < resLength; ii++) {
+            singleRes = res[ii];
+            this.setState(singleRes.state);
+            if (singleRes.state === 0) {
+                this.addDomainItem(singleRes.data);
+            }
+        }
 	} catch (e) {
 		console.log(e, "Illegitimate output from server on /add endpoint.");
 	}
