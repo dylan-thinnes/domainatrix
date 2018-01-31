@@ -43,7 +43,7 @@ Domain.prototype.getRemoteChildren = async function (resolve, reject) {
     var newChildren = [];
     for (var ii in newChildren) {
         var child = newChildren[ii];
-        if (child.state === 0) newChildren.push(child.name);
+        if (child.state === 0 || child.state === 1) newChildren.push(child.name);
     }
     resolve([newChildren]);
 }
