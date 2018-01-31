@@ -102,6 +102,7 @@ DomainData.prototype.addDomainCandidates = async function (s) {
 }
 DomainData.prototype.addDomainCandidate = async function (name, data) {
     if (this.domains[name] != undefined) return { "name": name, "state": 1 };
+    this.domains[name] = {}; //Prevent potential index allocation overlap due to asynchronicity
 
     var candidate = new Domain(name, this.db, this.addDomainCandidates.bind(this));
     if (data != undefined && typeof data === "object") candidate.setFromDb(data);
@@ -111,6 +112,7 @@ DomainData.prototype.addDomainCandidate = async function (name, data) {
         if (candidate.dns.state === RemoteProperty.DOES_NOT_EXIST) {
             candidate.delete();
             delete candidate;
+            delete this.domains[name];
             return { "name": name, "state": 2};
         }
         candidate.ping.update();
