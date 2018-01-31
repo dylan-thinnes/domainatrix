@@ -117,6 +117,7 @@ DomainData.prototype.addDomainCandidate = async function (name, data) {
         }
         candidate.ping.update();
         candidate.http.update();
+        candidate.children.update();
     }
     this.domains[name] = candidate;
     this.orderedDomains.splice(this.findOrderedIndex(name), 0, name);
