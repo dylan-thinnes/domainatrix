@@ -13,14 +13,17 @@ var DomainData = function () {
     this.db.sRun(`CREATE TABLE IF NOT EXISTS domains (
         name TEXT PRIMARY KEY,
         dns STRING,
-        dnsState INTEGER NOT NULL,
-        dnsLastUpdate INTEGER NOT NULL,
+        dnsState INTEGER NOT NULL DEFAULT -2,
+        dnsLastUpdate INTEGER NOT NULL DEFAULT 0,
         ping STRING,
-        pingState INTEGER NOT NULL,
-        pingLastUpdate INTEGER NOT NULL,
+        pingState INTEGER NOT NULL DEFAULT -2,
+        pingLastUpdate INTEGER NOT NULL DEFAULT 0,
         http STRING,
-        httpState INTEGER NOT NULL,
-        httpLastUpdate INTEGER NOT NULL
+        httpState INTEGER NOT NULL DEFAULT -2,
+        httpLastUpdate INTEGER NOT NULL DEFAULT 0,
+        children STRING,
+        childrenState INTEGER NOT NULL DEFAULT -2,
+        childrenLastUpdate INTEGER NOT NULL DEFAULT 0
     )`);
 }
 exports = module.exports = DomainData;
