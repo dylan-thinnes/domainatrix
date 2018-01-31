@@ -17,7 +17,7 @@ var Domain = function (name, db, addDomainCandidates) {
 exports = module.exports = Domain;
 
 Domain.prototype.getRemoteChildren = async function (resolve, reject) {
-    var childrenString = " ";
+    var candidateChildren = " ";
     await Promise.all([
         this.dns.update(),
         this.http.update()
@@ -26,26 +26,26 @@ Domain.prototype.getRemoteChildren = async function (resolve, reject) {
     for (var rrtype in this.dns.value) {
         var records = this.dns.value[rrtype];
         for (var jj in records) {
-            if (rrtype === "A" || rrtype === "AAAA" || rrtype === "CNAME" || rrtype === "PTR" || rrtype === "NS") childrenString += records[jj] + " ";
-            else if (rrtype === "TXT") childrenString += records[jj].join(" ") + " ";
-            else if (rrtype === "SRV") childrenString += records[jj].name + " ";
+            if (rrtype === "A" || rrtype === "AAAA" || rrtype === "CNAME" || rrtype === "PTR" || rrtype === "NS") candidateChildren += records[jj] + " ";
+            else if (rrtype === "TXT") candidateChildren += records[jj].join(" ") + " ";
+            else if (rrtype === "SRV") candidateChildren += records[jj].name + " ";
             else if (rrtype === "SOA") {
-                childrenString += records[jj].nsname + " ";
-                childrenString += records[jj].hostmaster + " ";
+                candidateChildren += records[jj].nsname + " ";
+                candidateChildren += records[jj].hostmaster + " ";
             }
-            else if (rrtype === "NAPTR") childrenString += records[jj].replacement + " ";
-            else if (rrtype === "MX") childrenString += records[jj].exchange + " ";
+            else if (rrtype === "NAPTR") candidateChildren += records[jj].replacement + " ";
+            else if (rrtype === "MX") candidateChildren += records[jj].exchange + " ";
         }
     }
-    if (this.http.additionalData != undefined) childrenString += this.http.additionalData + " ";
+    if (this.http.additionalData != undefined) candidateChildren += this.http.additionalData + " ";
 
-    var newChildrenCandidates = await this.addDomainCandidates(childrenString);
-    var newChildren = [];
-    for (var ii in newChildren) {
-        var child = newChildren[ii];
-        if (child.state === 0 || child.state === 1) newChildren.push(child.name);
+    var childrenStates = await this.addDomainCandidates(candidateChildren);
+    var children = [];
+    for (var ii in childrenStates) {
+        var child = childrenStates[ii];
+        if (child.state === 0 || child.state === 1) children.push(child.name);
     }
-    resolve([newChildren]);
+    resolve([children]);
 }
 Domain.prototype.getRemoteDns = function (resolve, reject) {
     var name = this.name;
