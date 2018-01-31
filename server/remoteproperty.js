@@ -47,6 +47,13 @@ RemoteProperty.prototype.update = async function () { // Returns boolean depende
 
     this.state = RemoteProperty.IN_PROGRESS;
     var newValue = await new Promise(this.remoteGetter);
+    if (newValue == undefined || newValue.length === 0) newValue = undefined;
+    else {
+        this.additionalData = newValue[1];
+        newValue = newValue[0];
+    }
+    console.log("newValue is ", newValue);
+
     await this.set(newValue);
     while (this.waiters.length !== 0) (this.waiters.pop())(); // Run resolve for all other waiting update() calls
     return true;

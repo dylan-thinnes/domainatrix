@@ -22,6 +22,11 @@ const makeRoutes = async function () {
         var r = await domData.updateXFromDomain('http', req.params.name);
         res.json(r);
     });
+    app.put('/v1/domains/:name/children', async (req, res, next) => {
+        if (req.params.name == undefined) return next();
+        var r = await domData.updateXFromDomain('children', req.params.name);
+        res.json(r);
+    });
     app.get('/v1/domains/:name', async (req, res, next) => {
         if (req.params.name == undefined) return next();
         var r = domData.getJson(req.params.name);
