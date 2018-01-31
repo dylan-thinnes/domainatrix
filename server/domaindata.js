@@ -49,13 +49,11 @@ DomainData.prototype.extractDomains = async function (searchString) {
     if (domainMatches == undefined) domainMatches = [];
 
     var ipV4Matches = searchString.match(this.ipV4AddrSearch);
-    console.log(ipV4Matches);
     if (ipV4Matches == undefined) ipV4Matches = [];
     var ipV6Matches = searchString.match(this.ipV6AddrSearch);
-    console.log(ipV6Matches);
     if (ipV6Matches == undefined) ipV6Matches = [];
+
     var ipMatches = ipV4Matches.concat(ipV6Matches);
-    console.log(ipMatches);
     var promisedReverse = util.promisify(dns.reverse);
     for (var ii in ipMatches) {
         try {

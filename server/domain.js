@@ -18,12 +18,11 @@ exports = module.exports = Domain;
 
 Domain.prototype.getRemoteChildren = async function (resolve, reject) {
     var childrenString = " ";
-    console.log("getting update for dns and http...");
     await Promise.all([
         this.dns.update(),
         this.http.update()
     ]);
-    console.log("checking data...");
+
     for (var rrtype in this.dns.value) {
         var records = this.dns.value[rrtype];
         for (var jj in records) {
@@ -40,15 +39,12 @@ Domain.prototype.getRemoteChildren = async function (resolve, reject) {
     }
     if (this.http.additionalData != undefined) childrenString += this.http.additionalData + " ";
 
-    console.log("finding children...");
     var newChildrenCandidates = await this.addDomainCandidates(childrenString);
-    console.log("children found");
     var newChildren = [];
     for (var ii in newChildren) {
         var child = newChildren[ii];
         if (child.state === 0) newChildren.push(child.name);
     }
-    console.log("newChildren pushed");
     resolve([newChildren]);
 }
 Domain.prototype.getRemoteDns = function (resolve, reject) {
