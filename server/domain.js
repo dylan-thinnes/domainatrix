@@ -20,7 +20,7 @@ Domain.prototype.getRemoteChildren = async function (resolve, reject) {
     var candidateChildren = " ";
     await Promise.all([
         this.dns.waitForUpdate(),
-        this.http.waitForUpdate()
+        this.http.additionalData == undefined ? this.http.update() : this.http.waitForUpdate()
     ]);
 
     for (var rrtype in this.dns.value) {
