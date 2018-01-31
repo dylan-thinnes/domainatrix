@@ -18,16 +18,15 @@ body {
   font-size: inherit;
   font-family: inherit; }
 
-.button:hover, .page > .list > .item:hover, .page > .input > input[type=text]:hover {
-  background-color: #eee; }
-.button:active, .page > .list > .item:active, .page > .input > input[type=text]:active {
-  background-color: #ddd;
-  color: #000; }
-.button:focus, .page > .list > .item:focus, .page > .input > input[type=text]:focus {
-  border-bottom-color: #111; }
-
 .button, .page > .list > .item {
   cursor: pointer; }
+  .button:hover, .page > .list > .item:hover {
+    background-color: #eeeeee; }
+  .button:active, .page > .list > .item:active {
+    background-color: #dddddd;
+    color: #000; }
+  .button:focus, .page > .list > .item:focus {
+    border-bottom-color: #111; }
 
 .button.box, .page > .list > .box.item {
   text-align: center;
@@ -53,6 +52,42 @@ body {
   .page .divider {
     border-bottom: 1px solid #111;
     margin: 4pt 0 4pt 0; }
+  .page .yellow {
+    background-color: #CDDC39; }
+  .page .green {
+    background-color: #4CAf50; }
+  .page .blue {
+    background-color: #03A9F4; }
+  .page .red {
+    background-color: #FF5722; }
+  .page .button.yellow:hover, .page > .list > .yellow.item:hover {
+    background-color: #bccb28; }
+  .page .button.yellow:active, .page > .list > .yellow.item:active {
+    background-color: #abba17;
+    color: #000; }
+  .page .button.yellow:focus, .page > .list > .yellow.item:focus {
+    border-bottom-color: #111; }
+  .page .button.green:hover, .page > .list > .green.item:hover {
+    background-color: #3b9e3f; }
+  .page .button.green:active, .page > .list > .green.item:active {
+    background-color: #2a8d2e;
+    color: #000; }
+  .page .button.green:focus, .page > .list > .green.item:focus {
+    border-bottom-color: #111; }
+  .page .button.blue:hover, .page > .list > .blue.item:hover {
+    background-color: #0098e3; }
+  .page .button.blue:active, .page > .list > .blue.item:active {
+    background-color: #0087d2;
+    color: #000; }
+  .page .button.blue:focus, .page > .list > .blue.item:focus {
+    border-bottom-color: #111; }
+  .page .button.red:hover, .page > .list > .red.item:hover {
+    background-color: #ee4611; }
+  .page .button.red:active, .page > .list > .red.item:active {
+    background-color: #dd3500;
+    color: #000; }
+  .page .button.red:focus, .page > .list > .red.item:focus {
+    border-bottom-color: #111; }
   .page .item {
     white-space: pre; }
   .page > .list {
@@ -74,6 +109,13 @@ body {
       background-color: transparent;
       border-bottom: 1px solid #999;
       outline: none; }
+      .page > .input > input[type=text]:hover {
+        background-color: #eeeeee; }
+      .page > .input > input[type=text]:active {
+        background-color: #dddddd;
+        color: #000; }
+      .page > .input > input[type=text]:focus {
+        border-bottom-color: #111; }
     .page > .input :nth-child(2) {
       margin-left: 1ch; }
   .page > #domainInfo .domainInfoRow {

@@ -44,32 +44,50 @@ RemoteProperty.prototype.runCallbacks = function () {
 	}
 }
 
-var MoreInfo = function (infoNode, buttonNode, showing, showingText, hiddenText) {
+var Toggler = function (infoNode, buttonNode, showingText, hiddenText) {
 	this.info = infoNode;
 	this.button = buttonNode;
 	if (showingText === undefined && hiddenText === undefined) this.useText = false;
 	else this.useText = true;
 	this.hiddenText = hiddenText ? hiddenText : this.button.innerHTML;
 	this.showingText = showingText ? showingText : this.button.innerHTML;
-	this.showing = showing ? showing : false;
-	this.showing = !this.showing;
+	this.showing = this.info.classList.contains("hide");
 	this.toggle();
 	this.button.addEventListener("click", this.toggle.bind(this));
 }
-MoreInfo.prototype.toggle = function () {
+Toggler.prototype.toggle = function () {
 	if (this.showing) this.hide();
 	else this.show();
 	this.showing = !this.showing;
 }
-MoreInfo.prototype.hide = function () {
-	this.info.style.display = "none";
+Toggler.prototype.hide = function () {
+	this.info.classList.toggle("hide");
 	if (this.useText === true) this.button.innerHTML = this.hiddenText;
 }
-MoreInfo.prototype.show = function () {
-	this.info.style.display = "initial";
+Toggler.prototype.show = function () {
+	this.info.classList.toggle("hide");
 	if (this.useText === true) this.button.innerHTML = this.showingText;
 }
-var blurb = new MoreInfo(document.getElementById("guide"), document.getElementById("toggleGuide"), false, "What is this? / More Info -", "What is this? / More Info +");
+var blurb = new Toggler(document.getElementById("guide"), document.getElementById("toggleGuide"), "What is this? / More Info -", "What is this? / More Info +");
+var logToggler = new Toggler(document.getElementById("log"), document.getElementById("feedback"));
+
+var Log = function (logId) {
+    this.node = document.getElementById(logId);
+    this.empty = true;
+}
+Log.prototype.add = function (item) {
+    if (this.empty === true) {
+        this.empty = false;
+        this.node.innerHTML = "";
+    }
+    var newItemNode = document.createElement("li");
+    newItemNode.classList.add("item");
+    newItemNode.innerHTML = Date.now().toString() + " " + item.name;
+    if (item.state === 0) newItemNode.classList.add("green");
+    else if (item.state === 1) newItemNode.classList.add("blue");
+    else newItemNode.classList.add("red");
+    this.node.insertBefore(newItemNode, this.node.firstChild);
+}
 
 var DomainListItem = function (domainJson, infoOutput) {
 	this.domain = domainJson.name;
@@ -79,6 +97,7 @@ var DomainListItem = function (domainJson, infoOutput) {
 	this.dns = new RemoteProperty(domainJson.dns, this.getX.bind(this, "/v1/domains/" + this.domain + "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
 	this.ping = new RemoteProperty(domainJson.ping, this.getX.bind(this, "/v1/domains/" + this.domain + "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
 	this.http = new RemoteProperty(domainJson.http, this.getX.bind(this, "/v1/domains/" + this.domain + "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
+	this.children = new RemoteProperty(domainJson.children, this.getX.bind(this, "/v1/domains/" + this.domain + "/children"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setChildren.bind(this, {state: -1}), false);
 	var match = this.domain.match(/(([^\s]+)\.|)ed\.ac\.uk$/);
 	this.hidden = false;
 	if (match === null) {
@@ -92,6 +111,7 @@ var DomainListItem = function (domainJson, infoOutput) {
 		"dns": this.setDns.bind(this),
 		"ping": this.setPing.bind(this),
 		"http": this.setHttp.bind(this),
+		"children": this.setChildren.bind(this),
 	}
 	this.focused = false;
 }
@@ -112,6 +132,9 @@ DomainListItem.prototype.initializeNodes = function (root) {
 	if (this.http.lastUpdate === 0 || this.http.state === -1 || this.http.state === -2) {
 		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastUpdate"));
 	}
+	/*if (this.children.lastUpdate === 0 || this.children.state === -1 || this.children.state === -2) {
+		this.children.getRemote(console.log.bind(this, "children update ran due to 0 lastUpdate"));
+	}*/
 }
 DomainListItem.prototype.formatPing = function () {
     if (this.ping.state !== 0 || this.ping.value == undefined) return "-----";
@@ -181,6 +204,13 @@ DomainListItem.prototype.setDns = function (newDns) {
 	//this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.lastUpdate);
 	if (this.focused === true) this.infoOutput.setDns(this.dns.state, this.formatDate(this.dns.lastUpdate));
 }
+DomainListItem.prototype.setChildren = function (newChildren) {
+    if (newChildren !== undefined) {
+		this.children.value = newChildren.value !== undefined ? newChildren.value : this.children.value;
+		this.children.state = newChildren.state !== undefined ? newChildren.state : this.children.state;
+		this.children.lastUpdate = newChildren.lastUpdate !== undefined ? newChildren.lastUpdate : this.children.lastUpdate;
+    }
+}
 DomainListItem.prototype.setPing = function (newPing) {
 	if (newPing !== undefined) {
 		this.ping.value = newPing.value !== undefined ? newPing.value : this.ping.value;
@@ -215,7 +245,7 @@ DomainListItem.prototype.toggle = function () {
 	if (this.hidden) this.show();
 	else this.hide();
 }
-var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId, infoId, callback) {
+var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId, infoId, logId, callback) {
 	/*
 	state -2: Getting server domain list.
 	state -1: Querying about one domain.
@@ -243,29 +273,37 @@ var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainC
 			"-3": "Rendering new list of domains...",
 			"-2": "Querying server for list of domains...",
 			"-1": "Querying server about submitted domain...",
-			"0":  "Domain legitimate. Added.",
+			"0":  "Domain(s) found and added.",
 			"1":  "Domain is already in the list.",
 			"2":  "Domain has no DNS entry.",
 			"3":  "Domain is not a subdomain of ed.ac.uk.",
 			"4":  "List of domains found and rendered.",
 			"5":  "Could not get the domain list from server."
 		},
-		stateColours: {
-			"-3": "#CDDC39",
-			"-2": "#CDDC39",
-			"-1": "#CDDC39",
-			"0":  "#4CAf50",
-			"1":  "#03A9F4",
-			"2":  "#FF5722",
-			"3":  "#FF5722",
-			"4":  "#4CAf50",
-			"5":  "#CDDC39"
+		stateClasses: {
+			"-3": "yellow",
+			"-2": "yellow",
+			"-1": "yellow",
+			"0":  "green",
+			"1":  "blue",
+			"2":  "red",
+			"3":  "red",
+			"4":  "green",
+			"5":  "yellow"
 		},
 		setState: function (state) {
-			this.node.innerHTML = this.stateTexts[state];
-			this.node.style.backgroundColor = this.stateColours[state];
-		}
+            if (state === "0" || state === 0) this.countSoFar += 1;
+
+			this.node.innerHTML = (state === "0" || state === 0 ? this.countSoFar.toString() + " " : "") + this.stateTexts[state];
+            this.node.classList.remove(this.stateClasses[this.state]);
+            
+            this.state = state;
+            this.node.classList.add(this.stateClasses[this.state]);
+		},
+        state: -3,
+        countSoFar: 0
 	}
+    this.log = new Log(logId);
 	this.updateNode = document.getElementById(updateId);
 	this.updateNode.addEventListener("click", this.getRemoteDomains.bind(this));
 	this.initDone = false;
@@ -321,7 +359,7 @@ DomainList.prototype.addDomainItem = function (resJson) {
 		this.entries[resJson.name].update(resJson);
 	}
 }
-DomainList.prototype.submitDomains = function (names) {
+DomainList.prototype.submitDomains = function (names, callback) {
 	if (this.state >= 0) {
 		this.feedback.setState(-1);
 		var req = new XMLHttpRequest();
@@ -387,8 +425,15 @@ DomainList.prototype.serverResponseControl = function (res) {
         for (var ii = 0; ii < resLength; ii++) {
             singleRes = res[ii];
             this.setState(singleRes.state);
+            this.log.add(singleRes);
             if (singleRes.state === 0) {
                 this.addDomainItem(singleRes.data);
+                if (singleRes.data.children.state === 0) {
+                    for (var ii in this.children.value) {
+                        var newName = this.children.value[ii];
+                        this.submitDomains(newName);
+                    }
+                }
             }
         }
 	} catch (e) {
@@ -473,7 +518,6 @@ var DomainInfo = function (node, list) {
 	}
 	this.setDns = function (newState, newDate) {
 		this.dnsLastCheck.innerHTML = "DNS Last Checked: " + newDate;
-        console.log(newState);
 		this.dnsState.innerHTML = "State: " + "<span style=\"display: inline-block; width: 13ch; background-color: " + this.stateList[newState][1] + ";\">" + this.stateList[newState][0] + "</span>";
 	}
 	this.setPing = function (newState, newDate) {
@@ -492,7 +536,7 @@ var DomainInfo = function (node, list) {
 	this.node.children[4].children[0].addEventListener("click", this.updateX.bind(this, "http"));
 }
 console.log("Script loaded.");
-var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount", "domainInfo", function () {console.log("Init of DomainList complete.")});
+var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "feedback", "updateDomainList", "domainCount", "domainInfo", "log", function () {console.log("Init of DomainList complete.")});
 /*var req = new XMLHttpRequest();
 req.open("GET", "/domains.txt");
 req.onreadystatechange = function () {
