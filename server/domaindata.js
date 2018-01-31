@@ -29,17 +29,13 @@ var DomainData = function () {
 exports = module.exports = DomainData;
 
 DomainData.prototype.init = async function () {
-    var existingCandidates = this.db.sAll("SELECT * FROM domains ORDER BY name ASC");
-    await this.parseExistingCandidates(existingCandidates);
-    return;
-}
-
-DomainData.prototype.parseExistingCandidates = async function (res) {
+    var res = this.db.sAll("SELECT * FROM domains ORDER BY name ASC");
     var candidacies = [];
     for (var ii = 0; ii < res.length; ii++) {
         candidacies[this.addDomainCandidate(res[ii]["name"], res[ii])];
     }
     await Promise.all(candidacies);
+    return;
 }
 
 DomainData.prototype.edAcUkSearch = new RegExp(/(?![^A-Za-z0-9\-])([A-Za-z0-9\-\.]+\.|)ed\.ac\.uk(?=[^A-Za-z0-9\-])/g);
