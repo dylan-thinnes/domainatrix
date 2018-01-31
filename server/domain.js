@@ -163,7 +163,7 @@ Domain.prototype.setFromDb = function (data) {
     this.http.state = data.httpState;
     this.http.lastUpdate = data.httpLastUpdate;
     this.children.value = data.children;
-    this.children.state = data.childrenHttp;
+    this.children.state = data.childrenState;
     this.children.lastUpdate = data.childrenLastUpdate;
 }
 
