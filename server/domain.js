@@ -19,8 +19,8 @@ exports = module.exports = Domain;
 Domain.prototype.getRemoteChildren = async function (resolve, reject) {
     var candidateChildren = " ";
     await Promise.all([
-        this.dns.update(),
-        this.http.update()
+        this.dns.waitForUpdate(),
+        this.http.waitForUpdate()
     ]);
 
     for (var rrtype in this.dns.value) {
@@ -76,6 +76,7 @@ Domain.prototype.getRemoteDns = function (resolve, reject) {
             finalResults[results[ii].type] = results[ii].records;
             resultExists = true;
         }
+        this.children.update();
         if (resultExists) resolve([finalResults]);
         else resolve();
     }).bind(this));
@@ -91,6 +92,15 @@ Domain.prototype.getRemotePing = function (resolve, reject) {
 }
 Domain.prototype.getRemoteHttp = function (resolve, reject) {
     var statusCode;
+    var onError = (function (res) {
+        this.children.update();
+        resolve([statusCode]);
+    }).bind(this);
+    var onResponse = (function (res) {
+        statusCode = res.statusCode;
+        this.children.update();
+        resolve([statusCode, res.headers.location]);
+    }).bind(this);
     var req = http.request({
         host: this.name,
         hostname: this.name,
@@ -99,16 +109,13 @@ Domain.prototype.getRemoteHttp = function (resolve, reject) {
         method: "HEAD"
     });
     setTimeout(() => {
-        resolve();
         req.abort();
+        resolve([statusCode]);
     }, 10000);
-    req.on("error", (res) => { resolve([statusCode]); }); // Catches socket abortion error
-    req.on("abort", (res) => { resolve([statusCode]); });
-    req.on("timeout", (res) => { resolve([statusCode]); });
-    req.on("response", (function (res) {
-        statusCode = res.statusCode;
-        resolve([statusCode, res.headers.location]);
-    }).bind(this));
+    req.on("error", onError); // Catches socket abortion error
+    req.on("abort", onError);
+    req.on("timeout", onError);
+    req.on("response", onResponse);
     req.end();
 }
 

@@ -38,7 +38,7 @@ RemoteProperty.prototype.get = function () {
 RemoteProperty.prototype.update = async function () { // Returns boolean dependent on whether an actual update check was made.
     if (this.state === RemoteProperty.IN_PROGRESS) { // If an update in progress, wait for it to be over then return that value.
         await this.waitForUpdate();
-        return this.get();
+        return true;
     }
 
     var currTime = Date.now();
@@ -58,6 +58,7 @@ RemoteProperty.prototype.update = async function () { // Returns boolean depende
     return true;
 }
 RemoteProperty.prototype.waitForUpdate = function () {
+    if (this.state !== RemoteProperty.IN_PROGRESS) return;
     return new Promise((function (resolve, reject) {
         this.waiters.push(resolve);
     }).bind(this));
