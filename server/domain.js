@@ -136,6 +136,11 @@ Domain.prototype.toJson = function () {
             value: this.http.value,
             state: this.http.state,
             lastUpdate: this.http.lastUpdate
+        },
+        children: {
+            value: this.children.value,
+            state: this.children.state,
+            lastUpdate: this.children.lastUpdate
         }
     }
 }
@@ -170,8 +175,7 @@ Domain.prototype.delete = async function () {
     await this.db.aRun("DELETE FROM domains WHERE name = $name", {$name: this.name});
 }
 Domain.prototype.create = async function () {
-    await this.db.aRun("INSERT INTO domains VALUES ($name, $f, $f, $f, $f, $f, $f, $f, $f, $f)", {
-        $name: this.name,
-        $f: 0
+    await this.db.aRun("INSERT INTO domains (name) VALUES ($name)", {
+        $name: this.name
     });
 }
