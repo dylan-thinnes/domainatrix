@@ -8,11 +8,11 @@ defaultConfig = {
     devtool: debug ? "inline-sourcemap" : false,
 }
 clientConfig = Object.assign({}, defaultConfig, {
-    context: path.join(__dirname, "src"),
+    context: path.join(__dirname, "src/client"),
     target: "web",
-    entry: "./client/main.js",
+    entry: ["./js/main.js", "./js/preload.js"],
     output: {
-        filename: "main.min.js",
+        filename: "[name].js",
         path: path.join(__dirname, "dist/client")
     },
     module: {
@@ -28,18 +28,18 @@ clientConfig = Object.assign({}, defaultConfig, {
             {
                 test: /\.scss$/,
                 use: [
-                    { loader: "file-loader", options: { name: "[name].css"} },
-                    { loader: "extract-loader" },
-                    { loader: "css-loader" },
-                    { loader: "sass-loader" }
+                    "style-loader",
+                    "css-loader",
+                    "sass-loader"
                 ]
             },
             {
                 test: /\.html$/,
-                loader: "file-loader",
-                options: {
-                    name: "[name].[ext]"
-                }
+                use: [
+                    { loader: "file-loader", options: { name: "[name].[ext]" } },
+                    "extract-loader",
+                    "html-loader"
+                ]
             }
         ]
     }
