@@ -26,11 +26,13 @@ clientConfig = Object.assign({}, defaultConfig, {
                 }
             },
             {
-                test: /\.css$/,
-                loader: "file-loader",
-                options: {
-                    name: "[name].[ext]"
-                }
+                test: /\.scss$/,
+                use: [
+                    { loader: "file-loader", options: { name: "[name].css"} },
+                    { loader: "extract-loader" },
+                    { loader: "css-loader" },
+                    { loader: "sass-loader" }
+                ]
             },
             {
                 test: /\.html$/,
