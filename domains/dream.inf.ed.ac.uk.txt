@@ -1,1 +1,0 @@
-{"domainName":"dream.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928372},"ping":{"state":1,"lastCheck":1507603986225},"http":{"state":0,"lastCheck":1507603986293}}

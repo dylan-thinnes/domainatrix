@@ -1,1 +1,0 @@
-{"domainName":"pkgforge.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928432},"ping":{"state":1,"lastCheck":1507604180900},"http":{"state":1,"lastCheck":1507604190965}}

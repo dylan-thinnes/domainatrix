@@ -1,1 +1,0 @@
-{"domainName":"reports.is.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928460},"ping":{"state":0,"lastCheck":1507604242094},"http":{"state":0,"lastCheck":1507604242141}}

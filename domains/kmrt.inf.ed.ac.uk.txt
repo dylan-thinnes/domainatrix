@@ -1,1 +1,0 @@
-{"domainName":"kmrt.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928381},"ping":{"state":1,"lastCheck":1507604109983},"http":{"state":0,"lastCheck":1507604110095}}

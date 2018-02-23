@@ -1,1 +1,0 @@
-{"domainName":"lcfg2.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928383},"ping":{"state":1,"lastCheck":1507604136393},"http":{"state":1,"lastCheck":1507604146451}}

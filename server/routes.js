@@ -1,45 +1,49 @@
 const express = require('express');
 const DomainData = require('./domaindata');
 
-const makeRoutes = () => {
+const makeRoutes = async function () {
 	const app = express();
 
-	// TODO: the internal structure of DomainData's "callback control" mechanism makes this janky
-	// wrapping in a promise is a temporary (but effective) solution
-	return new Promise((resolve, reject) => {
-		const domData = new DomainData("domains.txt", () => {
-				resolve(domData);
-		});
-	}).then(domData => {
+	const domData = new DomainData();
+    await domData.init();
 
-		// domData returns everything as a string. for ease of use i'm just converting it right back to json and letting express automatically add the json headers/everything else
-		
-		app.get('/add', (req, res) => {
-			domData.addDomainCandidate(req.query.domain, true, r => {
-				res.json(JSON.parse(r)); // temporary until DomainData is patched to return an object
-			});
-		});
-		app.get('/dns', (req, res) => {
-			domData.getXFromDomain('dns', req.query.domain, r => {
-				res.json(JSON.parse(r)); // temporary, see above
-			});
-		});
-		app.get('/ping', (req, res) => {
-			domData.getXFromDomain('ping', req.query.domain, r => {
-				res.json(JSON.parse(r)); // temporary, see above
-			})
-		});
-		app.get('/http', (req, res) => {
-			domData.getXFromDomain('http', req.query.domain, r => {
-				res.json(JSON.parse(r)); // temporary, see above
-			});
-		});
-		app.get('/data', (req, res) => {
-			res.json(JSON.parse(domData.getJson())); // temporary, see above
-		});
+    app.put('/v1/domains/:name/dns', async (req, res, next) => {
+        if (req.params.name == undefined) return next();
+        var r = await domData.updateXFromDomain('dns', req.params.name);
+        res.json(r);
+    });
+    app.put('/v1/domains/:name/ping', async (req, res, next) => {
+        if (req.params.name == undefined) return next();
+        var r = await domData.updateXFromDomain('ping', req.params.name);
+        res.json(r);
+    });
+    app.put('/v1/domains/:name/http', async (req, res, next) => {
+        if (req.params.name == undefined) return next();
+        var r = await domData.updateXFromDomain('http', req.params.name);
+        res.json(r);
+    });
+    app.put('/v1/domains/:name/children', async (req, res, next) => {
+        if (req.params.name == undefined) return next();
+        var r = await domData.updateXFromDomain('children', req.params.name);
+        res.json(r);
+    });
+    app.get('/v1/domains/:name', async (req, res, next) => {
+        if (req.params.name == undefined) return next();
+        var r = domData.getJson(req.params.name);
+        if (r == undefined) next();
+        else res.json(r);
+    });
 
-		return app;
-	});
+    app.post('/v1/domains', async (req, res, next) => {
+        if (req.body.names == undefined) return next();
+        var r = await domData.addDomainCandidates(req.body.names);
+        res.json(r);
+    });
+    app.get('/v1/domains', (req, res) => {
+        res.json(domData.getJson());
+    });
+
+    return app;
 }
 
 exports = module.exports = { makeRoutes }

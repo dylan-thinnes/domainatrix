@@ -1,1 +1,0 @@
-{"domainName":"webtest.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928563},"ping":{"state":1,"lastCheck":1507604338995},"http":{"state":1,"lastCheck":1507604349042}}

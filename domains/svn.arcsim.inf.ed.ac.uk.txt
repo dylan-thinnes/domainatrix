@@ -1,1 +1,0 @@
-{"domainName":"svn.arcsim.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928518},"ping":{"state":1,"lastCheck":1507604271596},"http":{"state":1,"lastCheck":1507604281645}}

@@ -1,0 +1,136 @@
+html {
+	overflow: hidden;
+}
+body {
+	margin: 0 auto 0 auto;
+	box-sizing: border-box;
+	width: 100vw;
+	max-width: 700px;
+	height: 100vh;
+	background-color: #f8f8f8;
+	color: #111;
+	font-size: 12pt;
+	font-family: monospace;
+	overflow: hidden;
+}
+* {
+    box-sizing: border-box;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+@mixin button ($fill: #fff, $border: #111) {
+    &:hover {  background-color: $fill - #111; }
+    &:active {
+        background-color: $fill - #222;
+        color: #000;
+    }
+    &:focus { border-bottom-color: $border; }
+}
+.button { @include button; cursor: pointer; }
+.button.box {
+    text-align: center;
+    border-radius: 0.25rem;
+	border: 1px solid #999;
+}
+@mixin flex-width($ratio: 1) {
+    flex: $ratio $ratio auto;
+    width: 0;
+    padding: 0;
+}
+@mixin flex-height($ratio: 1) {
+    flex: $ratio $ratio auto;
+    height: 0;
+    padding: 0;
+}
+.hide {
+    display: none;
+}
+
+.page {
+	height: 100%;
+	padding: 3pt;
+	display: flex;
+	flex-direction: column;
+    .title { font-size: 20pt; }
+    .centered { text-align: center; }
+    .padded { margin-top: 0.4rem; }
+    .accent { font-size: 9pt; }
+    .divider {
+        border-bottom: 1px solid #111;
+        margin: 4pt 0 4pt 0;
+    }
+    .yellow { background-color: #CDDC39; }
+    .green  { background-color: #4CAf50; }
+    .blue   { background-color: #03A9F4; }
+    .red    { background-color: #FF5722; }
+    .button.yellow { @include button(#CDDC39); }
+    .button.green  { @include button(#4CAf50); }
+    .button.blue   { @include button(#03A9F4); }
+    .button.red    { @include button(#FF5722); }
+    .item { white-space: pre; }
+    > .list {
+        @include flex-height();
+        margin: 0;
+        padding: 0;
+        overflow-y: scroll;
+        overflow-x: scroll;
+        > .item { @extend .button; }
+    }
+    > .input {
+        display: flex;
+        flex-direction: row;
+        > input[type=text] {
+            @include flex-width();
+            @include button();
+            border: 0;
+            background-color: transparent;
+            border-bottom: 1px solid #999;
+            outline: none;
+        }
+        :nth-child(2) {
+            margin-left: 1ch;
+        }
+    }
+    > #domainInfo {
+        .domainInfoRow {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            font-size: 9pt;
+            padding: 1pt 0 1pt 0;
+        }
+        .domainInfoGet {
+            margin-right: 0.5ch;
+            width: 10ch;
+            height: 1.5em;
+            align-self: center;
+        }
+        .goToDomain {
+            width: 20ch;
+            color: #111;
+            text-decoration: none;
+        }
+        .info {
+            border-left: 1px solid #111;
+            padding-left: 0.5ch;
+        }
+    }
+    > #updateDomainList {
+        width: 20ch;
+        height: 2rem;
+        align-self: center;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+    > #credit {
+        margin-top: 0.4rem;
+        font-size: 9pt;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}

@@ -1,1 +1,0 @@
-{"domainName":"ftp.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928375},"ping":{"state":0,"lastCheck":1507604013823},"http":{"state":1,"lastCheck":1507604023864}}

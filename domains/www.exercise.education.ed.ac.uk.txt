@@ -1,1 +1,0 @@
-{"domainName":"www.exercise.education.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928664},"ping":{"state":0,"lastCheck":1507604409419},"http":{"state":0,"lastCheck":1507604410108}}

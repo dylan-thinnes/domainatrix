@@ -1,1 +1,0 @@
-{"domainName":"sweb.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928514},"ping":{"state":1,"lastCheck":1507604295812},"http":{"state":0,"lastCheck":1507604295886}}

@@ -1,1 +1,0 @@
-{"domainName":"www.ilcc.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928677},"ping":{"state":1,"lastCheck":1507604414599},"http":{"state":0,"lastCheck":1507604414644}}

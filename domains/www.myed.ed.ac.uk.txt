@@ -1,1 +1,0 @@
-{"domainName":"www.myed.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928698},"ping":{"state":0,"lastCheck":1507604421781},"http":{"state":0,"lastCheck":1507604421815}}

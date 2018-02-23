@@ -1,1 +1,0 @@
-{"domainName":"pbf2013.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928427},"ping":{"state":1,"lastCheck":1507604176193},"http":{"state":0,"lastCheck":1507604176439}}

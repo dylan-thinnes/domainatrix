@@ -1,1 +1,0 @@
-{"domainName":"ddm.ace.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928369},"ping":{"state":0,"lastCheck":1507603969868},"http":{"state":0,"lastCheck":1507603969911}}

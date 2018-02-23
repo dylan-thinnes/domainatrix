@@ -1,1 +1,0 @@
-{"domainName":"archive.bio.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928362},"ping":{"state":1,"lastCheck":1507603886982},"http":{"state":0,"lastCheck":1507750632954}}

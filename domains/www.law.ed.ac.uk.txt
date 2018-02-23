@@ -1,1 +1,0 @@
-{"domainName":"www.law.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928684},"ping":{"state":0,"lastCheck":1507604416778},"http":{"state":0,"lastCheck":1507604417149}}

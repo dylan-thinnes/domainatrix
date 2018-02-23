@@ -1,1 +1,0 @@
-{"domainName":"groups.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928376},"ping":{"state":1,"lastCheck":1507604053086},"http":{"state":0,"lastCheck":1507604053148}}

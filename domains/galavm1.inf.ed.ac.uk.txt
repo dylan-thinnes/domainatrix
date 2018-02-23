@@ -1,1 +1,0 @@
-{"domainName":"galavm1.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928375},"ping":{"state":1,"lastCheck":1507604025905},"http":{"state":1,"lastCheck":1507604035959}}

@@ -1,10 +1,13 @@
-var RemoteProperty = function (initValue, checker, parser, change, limit, startCallback, getRemote, initCallback) {
+'use strict';
+var RemoteProperty = function (initJson, checker, parser, change, limit, startCallback, getRemote, initCallback) {
 	this.checker = checker ? checker : ()=>{};
 	this.parser = parser ? parser : function () {return arguments};
 	this.change = change ? change : ()=>{};
 	this.initCallback = initCallback ? initCallback : ()=>{};
 	this.gettingRemote = false;
-	this.value = initValue;
+	this.value = initJson.value;
+	this.state = initJson.state;
+	this.lastUpdate = initJson.lastUpdate;
 	this.callbacks = [];
 	this.startCallback = startCallback ? startCallback : ()=>{};
 	this.lastCall = 0;
@@ -28,9 +31,11 @@ RemoteProperty.prototype.getRemote = function (callback) {
 	}
 }
 RemoteProperty.prototype.setValue = function () {
-	var oldVar = this.value;
-	this.value = this.parser.apply(this, arguments);
-	if (this.value !== oldVar) this.change(this.value);
+	var newData = this.parser.apply(this, arguments);
+    this.value = newData.value;
+    this.state = newData.state;
+    this.lastUpdate = newData.update;
+	this.change(newData);
 	this.runCallbacks();
 }
 RemoteProperty.prototype.runCallbacks = function () {
@@ -39,158 +44,136 @@ RemoteProperty.prototype.runCallbacks = function () {
 	}
 }
 
-var MoreInfo = function (infoNode, buttonNode, showing, showingText, hiddenText) {
+var Toggler = function (infoNode, buttonNode, showingText, hiddenText) {
 	this.info = infoNode;
 	this.button = buttonNode;
 	if (showingText === undefined && hiddenText === undefined) this.useText = false;
 	else this.useText = true;
 	this.hiddenText = hiddenText ? hiddenText : this.button.innerHTML;
 	this.showingText = showingText ? showingText : this.button.innerHTML;
-	this.showing = showing ? showing : false;
-	this.showing = !this.showing;
+	this.showing = this.info.classList.contains("hide");
 	this.toggle();
 	this.button.addEventListener("click", this.toggle.bind(this));
 }
-MoreInfo.prototype.toggle = function () {
+Toggler.prototype.toggle = function () {
 	if (this.showing) this.hide();
 	else this.show();
 	this.showing = !this.showing;
 }
-MoreInfo.prototype.hide = function () {
-	this.info.style.display = "none";
+Toggler.prototype.hide = function () {
+	this.info.classList.toggle("hide");
 	if (this.useText === true) this.button.innerHTML = this.hiddenText;
 }
-MoreInfo.prototype.show = function () {
-	this.info.style.display = "initial";
+Toggler.prototype.show = function () {
+	this.info.classList.toggle("hide");
 	if (this.useText === true) this.button.innerHTML = this.showingText;
 }
-var blurb = new MoreInfo(document.getElementById("guide"), document.getElementById("toggleGuide"), false, "What is this? / More Info -", "What is this? / More Info +");
+var blurb = new Toggler(document.getElementById("guide"), document.getElementById("toggleGuide"), "What is this? / More Info -", "What is this? / More Info +");
+var logToggler = new Toggler(document.getElementById("log"), document.getElementById("feedback"));
 
-var DomainListItem = function (domainJson) {
-	this.domain = domainJson.domainName;
-	this.dns = new RemoteProperty({state: domainJson.dns.state, lastCheck: domainJson.dns.lastCheck}, this.getX.bind(this, "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
-	this.ping = new RemoteProperty({state: domainJson.ping.state, lastCheck: domainJson.ping.lastCheck}, this.getX.bind(this, "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
-	this.http = new RemoteProperty({state: domainJson.http.state, lastCheck: domainJson.http.lastCheck}, this.getX.bind(this, "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
+var Log = function (logId) {
+    this.node = document.getElementById(logId);
+    this.empty = true;
+}
+Log.prototype.add = function (item) {
+    if (this.empty === true) {
+        this.empty = false;
+        this.node.innerHTML = "";
+    }
+    var newItemNode = document.createElement("li");
+    newItemNode.classList.add("item");
+    newItemNode.innerHTML = Date.now().toString() + " " + item.name;
+    if (item.state === 0) newItemNode.classList.add("green");
+    else if (item.state === 1) newItemNode.classList.add("blue");
+    else newItemNode.classList.add("red");
+    this.node.insertBefore(newItemNode, this.node.firstChild);
+}
+
+var DomainListItem = function (domainJson, infoOutput) {
+	this.domain = domainJson.name;
+	this.infoOutput = infoOutput;
+	this.initJson = domainJson;
+	this.tempId = (Math.random() * Math.pow(2,32)).toString(16);
+	this.dns = new RemoteProperty(domainJson.dns, this.getX.bind(this, "/v1/domains/" + this.domain + "/dns"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setDns.bind(this, {state: -1}), false);
+	this.ping = new RemoteProperty(domainJson.ping, this.getX.bind(this, "/v1/domains/" + this.domain + "/ping"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setPing.bind(this, {state: -1}), false);
+	this.http = new RemoteProperty(domainJson.http, this.getX.bind(this, "/v1/domains/" + this.domain + "/http"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setHttp.bind(this, {state: -1}), false);
+	this.children = new RemoteProperty(domainJson.children, this.getX.bind(this, "/v1/domains/" + this.domain + "/children"), JSON.parse.bind(JSON), this.update.bind(this), 30*60*1000, this.setChildren.bind(this, {state: -1}), false);
 	var match = this.domain.match(/(([^\s]+)\.|)ed\.ac\.uk$/);
 	this.hidden = false;
 	if (match === null) {
 		this.hide();
 		this.show = this.hide;
 	} else {
-		this.subdomain = match[2];
-		this.nodes = {};
-		this.nodes.root = document.createElement("div");
-		this.nodes.root.className = "domainListItem";
-
-		this.nodes.title = document.createElement("a");
-		this.nodes.title.className = "domainTitle";
-		this.nodes.root.appendChild(this.nodes.title);
-
-		this.nodes.dns = document.createElement("div");
-		this.nodes.dns.className = "domainDns";
-		this.nodes.ping = document.createElement("div");
-		this.nodes.ping.className = "domainPing";
-		this.nodes.http = document.createElement("div");
-		this.nodes.http.className = "domainHttp";
-		this.nodes.tableSpacer = document.createElement("div");
-		this.nodes.tableSpacer.className = "domainTableSpacer";
-		this.nodes.domainName = document.createElement("div");
-		this.nodes.domainName.className = "domainName";
-
-		this.nodes.prefix = document.createElement("span");
-		this.nodes.prefix.className = "domainPrefix";
-		//this.nodes.prefix.href = "http://" + this.domain;
-		if (this.subdomain === undefined) {
-			this.nodes.prefix.appendChild(document.createTextNode("(ed.ac.uk)"));
-			this.nodes.prefix.style.color = "#999999";
-		} else this.nodes.prefix.appendChild(document.createTextNode(this.subdomain));
-		this.nodes.domainName.appendChild(this.nodes.prefix);
-
-		this.nodes.title.appendChild(this.nodes.dns);
-		this.nodes.title.appendChild(this.nodes.ping);
-		this.nodes.title.appendChild(this.nodes.http);
-		this.nodes.title.appendChild(this.nodes.tableSpacer);
-		this.nodes.title.appendChild(this.nodes.domainName);
-
-		this.nodes.info = document.createElement("div");
-		this.nodes.info.className = "domainInfo moreInfo";
-		this.moreInfo = new MoreInfo(this.nodes.info, this.nodes.title, false);
-		this.nodes.root.appendChild(this.nodes.info);
-
-		this.nodes.dnsRow = document.createElement("div");
-		this.nodes.dnsRow.className = "domainInfoRow";
-		this.nodes.updateDns = document.createElement("div");
-		this.nodes.updateDns.className = "button domainInfoGet";
-		this.nodes.updateDns.appendChild(document.createTextNode("Recheck"));
-		this.nodes.updateDns.addEventListener("click", this.dns.getRemote.bind(this.dns, ()=>{}));
-		this.nodes.dnsLastCheck = document.createElement("div");
-		this.nodes.dnsLastCheck.className = "lastCheck";
-		this.nodes.dnsLastCheck.appendChild(document.createTextNode("DNS Last Checked: " + this.formatDate(this.dns.value.lastCheck)));
-		this.nodes.dnsRow.appendChild(this.nodes.updateDns);
-		this.nodes.dnsRow.appendChild(this.nodes.dnsLastCheck);
-		
-		this.nodes.pingRow = document.createElement("div");
-		this.nodes.pingRow.className = "domainInfoRow";
-		this.nodes.updatePing = document.createElement("div");
-		this.nodes.updatePing.className = "button domainInfoGet";
-		this.nodes.updatePing.appendChild(document.createTextNode("Recheck"));
-		this.nodes.updatePing.addEventListener("click", this.ping.getRemote.bind(this.ping, ()=>{}));
-		this.nodes.pingLastCheck = document.createElement("div");
-		this.nodes.pingLastCheck.className = "lastCheck";
-		this.nodes.pingLastCheck.appendChild(document.createTextNode("Ping Last Checked: " + this.formatDate(this.ping.value.lastCheck)));
-		this.nodes.pingRow.appendChild(this.nodes.updatePing);
-		this.nodes.pingRow.appendChild(this.nodes.pingLastCheck);
-
-		this.nodes.httpRow = document.createElement("div");
-		this.nodes.httpRow.className = "domainInfoRow";
-		this.nodes.updateHttp = document.createElement("div");
-		this.nodes.updateHttp.className = "button domainInfoGet";
-		this.nodes.updateHttp.appendChild(document.createTextNode("Recheck"));
-		this.nodes.updateHttp.addEventListener("click", this.http.getRemote.bind(this.http, ()=>{}));
-		this.nodes.httpLastCheck = document.createElement("div");
-		this.nodes.httpLastCheck.className = "lastCheck";
-		this.nodes.httpLastCheck.appendChild(document.createTextNode("HTTP Last Checked: " + this.formatDate(this.http.value.lastCheck)));
-		this.nodes.httpRow.appendChild(this.nodes.updateHttp);
-		this.nodes.httpRow.appendChild(this.nodes.httpLastCheck);
-
-		this.nodes.goToDomainRow = document.createElement("div");
-		this.nodes.goToDomainRow.className = "domainInfoRow";
-		this.nodes.goToDomain = document.createElement("a");
-		this.nodes.goToDomain.className = "button domainInfoGet goToDomain";
-		this.nodes.goToDomain.href = "http://" + this.domain;
-		this.nodes.goToDomain.appendChild(document.createTextNode("Go To This Domain"));
-		this.nodes.goToDomainRow.appendChild(this.nodes.goToDomain);
-
-		this.nodes.info.appendChild(this.nodes.dnsRow);
-		this.nodes.info.appendChild(this.nodes.pingRow);
-		this.nodes.info.appendChild(this.nodes.httpRow);
-		this.nodes.info.appendChild(this.nodes.goToDomainRow);
+		this.subdomain = match[2] !== undefined ? match[2] : "(ed.ac.uk)";
 	}
 	this.updateKey = {
-		"domainName": ()=>{},
+		"name": ()=>{},
 		"dns": this.setDns.bind(this),
 		"ping": this.setPing.bind(this),
 		"http": this.setHttp.bind(this),
-		"dnsLastCheck": ()=>{},
-		"pingLastCheck": ()=>{},
-		"httpLastCheck": ()=>{}
+		"children": this.setChildren.bind(this),
 	}
-	this.update(domainJson);
-	if (this.ping.value.lastCheck === 0) {
-		this.ping.getRemote(console.log.bind(this, "ping update ran due to 0 lastCheck"));
+	this.focused = false;
+}
+DomainListItem.prototype.domString = function (styling) {
+	return `<li class="item" id="` + this.tempId + `" ` + (styling === undefined ? "" : styling) + `><span style="background-color: ` + this.colorCode[this.dns.state] + `" class="domainDns">` + this.formatDns() + `</span>|<span style="background-color: ` + this.colorCode[this.ping.state] + `" class="domainPing">` + this.formatPing() + `</span>|<span style="background-color: ` + this.colorCode[this.http.state] + `" class="domainHttp">` + this.formatHttp() + `</span>|<span class="domainPrefix">` + this.subdomain + `</span></li>`;
+}
+DomainListItem.prototype.initializeNodes = function (root) {
+	this.nodes = {};
+	if (root === undefined) this.nodes.root = document.getElementById(this.tempId);
+	else this.nodes.root = root;
+	this.nodes.root.addEventListener("click", this.infoOutput.setFocus.bind(this.infoOutput, this.domain));
+	this.nodes.dns = this.nodes.root.children[0];
+	this.nodes.ping = this.nodes.root.children[1];
+	this.nodes.http = this.nodes.root.children[2];
+	if (this.ping.lastUpdate === 0 || this.ping.state === -1 || this.ping.state === -2) {
+		this.ping.getRemote(console.log.bind(this, "ping update ran due to 0 lastUpdate"));
 	}
-	if (this.http.value.lastCheck === 0) {
-		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastCheck"));
+	if (this.http.lastUpdate === 0 || this.http.state === -1 || this.http.state === -2) {
+		this.http.getRemote(console.log.bind(this, "http update ran due to 0 lastUpdate"));
 	}
+	/*if (this.children.lastUpdate === 0 || this.children.state === -1 || this.children.state === -2) {
+		this.children.getRemote(console.log.bind(this, "children update ran due to 0 lastUpdate"));
+	}*/
+}
+DomainListItem.prototype.formatPing = function () {
+    if (this.ping.state !== 0 || this.ping.value == undefined) return "-----";
+    var suffix = "ms";
+    var value = this.ping.value;
+    if (value < 1000) suffix = "&#956;s";
+    else if (value < 10000) {
+        value = Math.floor(value / 100) / 10;
+        if (value === parseInt(value)) value = value.toString() + ".0"
+    } else if (value < 1000000) value = Math.floor(value / 1000);
+    else {
+        value = Math.floor(value / 1000000);
+        suffix = "s";
+    }
+    var result = value.toString() + suffix;
+    return result.padStart(5, " ");
+}
+DomainListItem.prototype.formatHttp = function () {
+    if (this.http.state !== 0 || this.http.value == undefined) return "----";
+    return " " + this.http.value.toString();
+}
+DomainListItem.prototype.formatDns = function () {
+    if (this.dns.state !== 0 || this.dns.value == undefined) return "-----";
+    var result = "";
+    result += this.dns.value["A"]     == undefined ? " " : "4";
+    result += this.dns.value["AAAA"]  == undefined ? " " : "6";
+    result += this.dns.value["CNAME"] == undefined ? " " : "C";
+    result += this.dns.value["MX"]    == undefined ? " " : "M";
+    result += this.dns.value["TXT"]   == undefined ? " " : "T";
+    return result;
 }
 DomainListItem.prototype.formatDate = function (timestamp) {
-	if (timestamp === 0) return "Still Checking"
+	if (timestamp === 0) return "Still Checking";
 	var date = new Date(timestamp);
 	return (date.getUTCFullYear()-2000).toString().padStart(2, "0") + "/" + date.getUTCMonth().toString().padStart(2, "0") + "/" + date.getUTCDate().toString().padStart(2, "0") + " " + date.getUTCHours().toString().padStart(2, "0") + ":" + date.getUTCMinutes().toString().padStart(2, "0");
 }
 DomainListItem.prototype.getX = function (endpoint, callback) { 
 	var req = new XMLHttpRequest();
-	req.open("GET", endpoint + "?domain=" + this.domain);
+	req.open("PUT", endpoint);
 	req.onreadystatechange = (function (callback) {
 		if (this.readyState === 4) {
 			callback(req.response);
@@ -212,27 +195,43 @@ DomainListItem.prototype.colorCode = {
 }
 DomainListItem.prototype.setDns = function (newDns) {
 	if (newDns !== undefined) {
-		this.dns.value.state = newDns.state !== undefined ? newDns.state : this.dns.value.state;
-		this.dns.value.lastCheck = newDns.lastCheck !== undefined ? newDns.lastCheck : this.dns.value.lastCheck;
+		this.dns.value = newDns.value !== undefined ? newDns.value : this.dns.value;
+		this.dns.state = newDns.state !== undefined ? newDns.state : this.dns.state;
+		this.dns.lastUpdate = newDns.lastUpdate !== undefined ? newDns.lastUpdate : this.dns.lastUpdate;
 	}
-	this.nodes.dns.style.backgroundColor = this.colorCode[this.dns.value.state];
-	this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.value.lastCheck);
+	this.nodes.dns.style.backgroundColor = this.colorCode[this.dns.state];
+    this.nodes.dns.innerHTML = this.formatDns();
+	//this.nodes.dnsLastCheck.innerHTML = "DNS Last Checked: " + this.formatDate(this.dns.lastUpdate);
+	if (this.focused === true) this.infoOutput.setDns(this.dns.state, this.formatDate(this.dns.lastUpdate));
+}
+DomainListItem.prototype.setChildren = function (newChildren) {
+    if (newChildren !== undefined) {
+		this.children.value = newChildren.value !== undefined ? newChildren.value : this.children.value;
+		this.children.state = newChildren.state !== undefined ? newChildren.state : this.children.state;
+		this.children.lastUpdate = newChildren.lastUpdate !== undefined ? newChildren.lastUpdate : this.children.lastUpdate;
+    }
 }
 DomainListItem.prototype.setPing = function (newPing) {
 	if (newPing !== undefined) {
-		this.ping.value.state = newPing.state !== undefined ? newPing.state : this.ping.value.state;
-		this.ping.value.lastCheck = newPing.lastCheck !== undefined ? newPing.lastCheck : this.ping.value.lastCheck;
+		this.ping.value = newPing.value !== undefined ? newPing.value : this.ping.value;
+		this.ping.state = newPing.state !== undefined ? newPing.state : this.ping.state;
+		this.ping.lastUpdate = newPing.lastUpdate !== undefined ? newPing.lastUpdate : this.ping.lastUpdate;
 	}
-	this.nodes.ping.style.backgroundColor = this.colorCode[this.ping.value.state];
-	this.nodes.pingLastCheck.innerHTML = "Ping Last Checked: " + this.formatDate(this.ping.value.lastCheck);
+	this.nodes.ping.style.backgroundColor = this.colorCode[this.ping.state];
+    this.nodes.ping.innerHTML = this.formatPing();
+	//this.nodes.pingLastCheck.innerHTML = "Ping Last Checked: " + this.formatDate(this.ping.lastUpdate);
+	if (this.focused === true) this.infoOutput.setPing(this.ping.state, this.formatDate(this.ping.lastUpdate));
 }
 DomainListItem.prototype.setHttp = function (newHttp) {
 	if (newHttp !== undefined) {
-		this.http.value.state = newHttp.state !== undefined ? newHttp.state : this.http.value.state;
-		this.http.value.lastCheck = newHttp.lastCheck !== undefined ? newHttp.lastCheck : this.http.value.lastCheck;
+		this.http.value = newHttp.value !== undefined ? newHttp.value : this.http.value;
+		this.http.state = newHttp.state !== undefined ? newHttp.state : this.http.state;
+		this.http.lastUpdate = newHttp.lastUpdate !== undefined ? newHttp.lastUpdate : this.http.lastUpdate;
 	}
-	this.nodes.http.style.backgroundColor = this.colorCode[this.http.value.state];
-	this.nodes.httpLastCheck.innerHTML = "HTTP Last Checked: " + this.formatDate(this.http.value.lastCheck);
+	this.nodes.http.style.backgroundColor = this.colorCode[this.http.state];
+    this.nodes.http.innerHTML = this.formatHttp();
+	//this.nodes.httpLastCheck.innerHTML = "HTTP Last Checked: " + this.formatDate(this.http.lastUpdate);
+	if (this.focused === true) this.infoOutput.setHttp(this.http.state, this.formatDate(this.http.lastUpdate));
 }
 DomainListItem.prototype.hide = function () {
 	this.nodes.root.style.display = "none";
@@ -246,7 +245,7 @@ DomainListItem.prototype.toggle = function () {
 	if (this.hidden) this.show();
 	else this.hide();
 }
-var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId) {
+var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainCountId, infoId, logId, callback) {
 	/*
 	state -2: Getting server domain list.
 	state -1: Querying about one domain.
@@ -259,42 +258,57 @@ var DomainList = function (id, searchId, submitId, feedbackId, updateId, domainC
 	*/
 	this.node = document.getElementById(id);
 	this.searchNode = document.getElementById(searchId); 
-	this.searchNode.addEventListener("input", this.searchDomainItems.bind(this));
+	this.searchNode.addEventListener("keypress", this.searchDomainItems.bind(this));
 	this.entries = {};
 	this.orderedDomains = [];
 	this.inputNode = document.getElementById(submitId);
 	this.inputNode.addEventListener("keydown", this.handleInputKeys.bind(this));
 	this.domainCount = document.getElementById(domainCountId);
+	this.info = new DomainInfo(document.getElementById(infoId), this);
 	this.state = 0;
+	this.stagingArea = document.getElementById("stagingArea");
 	this.feedback = {
 		node: document.getElementById(feedbackId),
 		stateTexts: {
-			"-2": "Querying server for existing domains...",
+			"-3": "Rendering new list of domains...",
+			"-2": "Querying server for list of domains...",
 			"-1": "Querying server about submitted domain...",
-			"0":  "Domain legitimate. Added.",
+			"0":  "Domain(s) found and added.",
 			"1":  "Domain is already in the list.",
 			"2":  "Domain has no DNS entry.",
 			"3":  "Domain is not a subdomain of ed.ac.uk.",
-			"4":  "Got the domain list from server.",
+			"4":  "List of domains found and rendered.",
 			"5":  "Could not get the domain list from server."
 		},
-		stateColours: {
-			"-2": "#CDDC39",
-			"-1": "#CDDC39",
-			"0":  "#4CAf50",
-			"1":  "#03A9F4",
-			"2":  "#FF5722",
-			"3":  "#FF5722",
-			"4":  "#4CAf50",
-			"5":  "#CDDC39"
+		stateClasses: {
+			"-3": "yellow",
+			"-2": "yellow",
+			"-1": "yellow",
+			"0":  "green",
+			"1":  "blue",
+			"2":  "red",
+			"3":  "red",
+			"4":  "green",
+			"5":  "yellow"
 		},
 		setState: function (state) {
-			this.node.innerHTML = this.stateTexts[state];
-			this.node.style.backgroundColor = this.stateColours[state];
-		}
+            if (state === "0" || state === 0) this.countSoFar += 1;
+
+			this.node.innerHTML = (state === "0" || state === 0 ? this.countSoFar.toString() + " " : "") + this.stateTexts[state];
+            this.node.classList.remove(this.stateClasses[this.state]);
+            
+            this.state = state;
+            this.node.classList.add(this.stateClasses[this.state]);
+		},
+        state: -3,
+        countSoFar: 0
 	}
+    this.log = new Log(logId);
 	this.updateNode = document.getElementById(updateId);
 	this.updateNode.addEventListener("click", this.getRemoteDomains.bind(this));
+	this.initDone = false;
+	this.initCallback = callback;
+	this.allShown = true;
 	this.getRemoteDomains();
 }
 Object.defineProperty(DomainList.prototype, "search", {
@@ -312,7 +326,7 @@ DomainList.prototype.setState = function (state) {
 DomainList.prototype.handleInputKeys = function (e) {
 	if (e.keyCode === 13) {
 		e.preventDefault();
-		this.askDomain(this.inputNode.value);
+		this.submitDomains(this.inputNode.value);
 	}
 }
 DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRight) {
@@ -326,33 +340,37 @@ DomainList.prototype.findOrderedIndex = function (domain, subsetLeft, subsetRigh
 	return subsetLeft;
 }
 DomainList.prototype.addDomainItem = function (resJson) {
-	if (this.entries[resJson.domainName] === undefined) {
-		var orderedIndex = this.findOrderedIndex(resJson.domainName);
-		this.orderedDomains.splice(orderedIndex, 0, resJson.domainName);
-		this.entries[resJson.domainName] = new DomainListItem(resJson);
+	if (this.entries[resJson.name] === undefined) {
+		var orderedIndex = this.findOrderedIndex(resJson.name);
+		this.orderedDomains.splice(orderedIndex, 0, resJson.name);
+		this.entries[resJson.name] = new DomainListItem(resJson, this.info);
+		this.stagingArea.innerHTML = this.entries[resJson.name].domString();
+		this.entries[resJson.name].initializeNodes(this.stagingArea.children[0]);
 		if (this.node.children.length === 0) {
-			this.node.appendChild(this.entries[resJson.domainName].nodes.root);
+			this.node.appendChild(this.entries[resJson.name].nodes.root);
 		} else if (orderedIndex === this.node.children.length) {
-			this.node.appendChild(this.entries[resJson.domainName].nodes.root);
+			this.node.appendChild(this.entries[resJson.name].nodes.root);
 		} else {
-			this.node.insertBefore(this.entries[resJson.domainName].nodes.root, this.node.children[orderedIndex]);
+			this.node.insertBefore(this.entries[resJson.name].nodes.root, this.node.children[orderedIndex]);
 		}
+		this.stagingArea.innerHTML = "";
 		this.searchDomainItems();
 	} else {
-		this.entries[resJson.domainName].update(resJson);
+		this.entries[resJson.name].update(resJson);
 	}
 }
-DomainList.prototype.askDomain = function (domain) {
+DomainList.prototype.submitDomains = function (names, callback) {
 	if (this.state >= 0) {
 		this.feedback.setState(-1);
 		var req = new XMLHttpRequest();
-		req.open("GET", "/add?domain="+domain);
+		req.open("POST", "/v1/domains");
+        req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		req.onreadystatechange = (function (req) {
 			if (req.readyState === 4) {
 				this.serverResponseControl(req.response);
 			}
 		}).bind(this, req);
-		req.send();
+		req.send("names=" + names);
 	} else {
 		console.log("State already running, wait until later.");
 	}
@@ -360,74 +378,173 @@ DomainList.prototype.askDomain = function (domain) {
 DomainList.prototype.getRemoteDomains = function () {
 	if (this.state >= 0) {
 		this.setState(-2);
+		this.info.resetFocus();
 		var req = new XMLHttpRequest();
-		req.open("GET", "/data");
+		req.open("GET", "/v1/domains?t=" + Date.now().toString(36));
 		req.onreadystatechange = (function (req) {
 			if (req.readyState === 4) {
 				this.setRemoteDomains(req.response);
 			}
 		}).bind(this, req);
 		req.send();
-	} else {
-		console.log("State already running, wait until later.");
-	}
-
+	} else console.log("State already running, wait until later.");
 }
 DomainList.prototype.setRemoteDomains = function (res) {
 	try {
 		var resJson = JSON.parse(res);
+		this.orderedDomains = [];
+		this.entries = {};
 		for (var ii = 0; ii < resJson.length; ii++) {
-			this.addDomainItem(resJson[ii]);
+			this.orderedDomains.push(resJson[ii].name);
+			this.entries[resJson[ii].name] = new DomainListItem(resJson[ii], this.info);
 		}
-		this.setState(4);
+		this.allShown = false;
 		this.searchDomainItems();
+		if (this.initDone === false) {
+			this.initDone = true;
+			this.initCallback();
+		}	
 	} catch (e) {
 		this.setState(5);
-		console.log(e, "Illegitimate output from server on /data endpoint.");
+		console.log(e, "Illegitimate output from server on /domains endpoint.");
 	}
+}
+DomainList.prototype.setMarkup = function (domains) {
+	this.setState(-3);
+	var markup = [];
+	for (var ii = 0; ii < domains.length; ii++) markup.push(this.entries[domains[ii]].domString());
+	this.node.innerHTML = markup.join("");
+	for (var ii = 0; ii < domains.length; ii++) this.entries[domains[ii]].initializeNodes(this.node.children[ii]);
+	this.setState(4);
 }
 DomainList.prototype.serverResponseControl = function (res) {
 	try {
-		var resJson = JSON.parse(res);
-		this.setState(resJson.state);
-		if (resJson.state === 0) {
-			this.addDomainItem(resJson.data);
-		} else {
-		}
+        var res = JSON.parse(res);
+        var singleRes;
+        var resLength = res.length;
+        for (var ii = 0; ii < resLength; ii++) {
+            singleRes = res[ii];
+            this.setState(singleRes.state);
+            this.log.add(singleRes);
+            if (singleRes.state === 0) {
+                this.addDomainItem(singleRes.data);
+                if (singleRes.data.children.state === 0) {
+                    for (var ii in this.children.value) {
+                        var newName = this.children.value[ii];
+                        this.submitDomains(newName);
+                    }
+                }
+            }
+        }
 	} catch (e) {
 		console.log(e, "Illegitimate output from server on /add endpoint.");
 	}
 }
 DomainList.prototype.searchDomainItems = function (e) {
+	if (e !== undefined && e.keyCode !== 13) return;
 	if (this.search === "") {
-		var entriesExist = 0;
-		var entriesShown = 0;
-		for (var domain in this.entries) {
-			this.entries[domain].show();
-			entriesExist++;
-			entriesShown++;
+		if (this.allShown !== true) {
+			this.allShown = true;
+			this.setMarkup(this.orderedDomains);
 		}
-		this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
+		this.domainCount.innerHTML = this.orderedDomains.length + "/" + this.orderedDomains.length;
 	} else {
 		try {
 			var regex = new RegExp(this.search);
 		} catch (e) {
+			console.log(e);
 			return;
 		}
 		var entriesExist = 0;
 		var entriesShown = 0;
-		for (var domain in this.entries) {
+		var showingDomains = [];
+		for (var ii = 0; ii < this.orderedDomains.length; ii++) {
+			var domain = this.orderedDomains[ii];
 			var subdomain = this.entries[domain].domain === "ed.ac.uk" ? "ed.ac.uk" : this.entries[domain].subdomain;
 			if (subdomain === undefined) continue;
-			if (subdomain.match(regex) !== null) {
-				this.entries[domain].show();
+			if (regex.test(subdomain)) {
 				entriesShown++;
-			} else this.entries[domain].hide();
+				showingDomains.push(domain);
+			}
 			entriesExist++;
 		}
+		this.setMarkup(showingDomains);
 		this.domainCount.innerHTML = entriesShown.toString() + "/" + entriesExist.toString();
+		if (entriesExist !== entriesShown) this.allShown = false;
+		else this.allShown = true;
 	}
 }
-console.log("Script loaded.");
-var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "serverFeedback", "updateDomainList", "domainCount");
 
+var DomainInfo = function (node, list) {
+	this.stateList = {
+		"-1": ["Processing...", "#CDDC39"],
+		"0": ["Success.", "#4CAF50"],
+		"1": ["Failed.", "#FF5722"]
+	}
+	this.focus = undefined;
+	this.node = node;
+	this.list = list;
+	this.name = this.node.children[0];
+	this.dnsState = this.node.children[2].children[1].children[0];
+	this.pingState = this.node.children[3].children[1].children[0];
+	this.httpState = this.node.children[4].children[1].children[0];
+	this.dnsLastCheck = this.node.children[2].children[1].children[2];
+	this.pingLastCheck = this.node.children[3].children[1].children[2];
+	this.httpLastCheck = this.node.children[4].children[1].children[2];
+	this.goToDomain = this.node.children[5].children[0];
+	this.resetFocus = function () {
+		if (this.focus === undefined) return;
+		this.focus.focused = false;
+		this.focus = undefined;
+		this.node.classList.add("hide");
+	}
+	this.setFocus = function (newFocus) {
+		console.log("new focus...", newFocus);
+		if (this.focus !== undefined && newFocus === this.focus.domain) {
+			this.focus.focused = false;
+			this.focus = undefined;
+			this.node.classList.add("hide");
+		} else if (this.list.entries[newFocus] !== undefined) {
+			if (this.focus !== undefined) this.focus.focused = false;
+			this.focus = this.list.entries[newFocus];
+			this.focus.focused = true;
+			this.name.innerHTML = this.focus.domain;
+			this.goToDomain.href = "http://" + this.focus.domain;
+			this.focus.setDns();
+			this.focus.setPing();
+			this.focus.setHttp();
+			this.node.classList.remove("hide");
+		}
+	}
+	this.setDns = function (newState, newDate) {
+		this.dnsLastCheck.innerHTML = "DNS Last Checked: " + newDate;
+		this.dnsState.innerHTML = "State: " + "<span style=\"display: inline-block; width: 13ch; background-color: " + this.stateList[newState][1] + ";\">" + this.stateList[newState][0] + "</span>";
+	}
+	this.setPing = function (newState, newDate) {
+		this.pingLastCheck.innerHTML = "Ping Last Checked: " + newDate;
+		this.pingState.innerHTML = "State: " + "<span style=\"display: inline-block; width: 13ch; background-color: " + this.stateList[newState][1] + ";\">" + this.stateList[newState][0] + "</span>";
+	}
+	this.setHttp = function (newState, newDate) {
+		this.httpLastCheck.innerHTML = "HTTP Last Checked: " + newDate;
+		this.httpState.innerHTML = "State: " + "<span style=\"display: inline-block; width: 13ch; background-color: " + this.stateList[newState][1] + ";\">" + this.stateList[newState][0] + "</span>";
+	}
+	this.updateX = function (x) {
+		this.focus[x].getRemote();
+	}
+	this.node.children[2].children[0].addEventListener("click", this.updateX.bind(this, "dns"));
+	this.node.children[3].children[0].addEventListener("click", this.updateX.bind(this, "ping"));
+	this.node.children[4].children[0].addEventListener("click", this.updateX.bind(this, "http"));
+}
+console.log("Script loaded.");
+var list = new DomainList("domainList", "searchDomainInput", "addDomainInput", "feedback", "updateDomainList", "domainCount", "domainInfo", "log", function () {console.log("Init of DomainList complete.")});
+/*var req = new XMLHttpRequest();
+req.open("GET", "/domains.txt");
+req.onreadystatechange = function () {
+	if (req.status === 200 && req.readyState === 4) {
+		console.log(start = Date.now());
+		document.getElementById("domainList").innerHTML = req.response;
+		console.log(Date.now(), Date.now() - start);
+	}
+}
+req.send();
+*/

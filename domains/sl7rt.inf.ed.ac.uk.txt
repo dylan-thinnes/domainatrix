@@ -1,1 +1,0 @@
-{"domainName":"sl7rt.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928508},"ping":{"state":1,"lastCheck":1507604267371},"http":{"state":0,"lastCheck":1507604267437}}

@@ -1,1 +1,0 @@
-{"domainName":"scirocco-project-msa.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928481},"ping":{"state":1,"lastCheck":1507604258737},"http":{"state":0,"lastCheck":1507604258946}}

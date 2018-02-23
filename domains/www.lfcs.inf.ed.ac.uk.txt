@@ -1,1 +1,0 @@
-{"domainName":"www.lfcs.inf.ed.ac.uk","dns":{"state":0,"lastCheck":1507594928693},"ping":{"state":1,"lastCheck":1507604419410},"http":{"state":0,"lastCheck":1507604419482}}
