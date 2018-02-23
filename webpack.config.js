@@ -44,6 +44,20 @@ clientConfig = Object.assign({}, defaultConfig, {
         ]
     }
 });
+oldClientConfig = Object.assign({}, defaultConfig, {
+    context: path.join(__dirname, "src/client/oldInterface"),
+    target: "web",
+    entry: "./pack.js",
+    output: {
+        filename: "script.js",
+        path: path.join(__dirname, "dist/client/old")
+    },
+    module: { rules: [ {
+        test: /.(css|html)$/,
+        loader: "file-loader",
+        options: { name: "[name].[ext]" }
+    } ] }
+});
 serverConfig = Object.assign({}, defaultConfig, {
     context: path.join(__dirname, "src"),
     target: "node",
@@ -61,5 +75,6 @@ serverConfig = Object.assign({}, defaultConfig, {
 });
 module.exports = [
     clientConfig,
+    oldClientConfig,
     serverConfig
 ]
