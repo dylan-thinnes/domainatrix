@@ -5,11 +5,12 @@ const Database = abstractdb("better-sqlite3");
 const RemoteProperty = require("./remoteproperty");
 const dns = require("dns");
 const util = require("util");
+const path = require("path");
 
 var DomainData = function () {
     this.domains = {}; 
     this.orderedDomains = [];
-    this.db = new Database(__dirname + "/app.db");
+    this.db = new Database(path.resolve("./app.db"));
     this.db.sRun(`CREATE TABLE IF NOT EXISTS domains (
         name TEXT PRIMARY KEY,
         dns STRING,

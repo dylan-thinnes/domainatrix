@@ -1,13 +1,15 @@
+const path = require("path");
 const express = require('express');
 const app = express();
-const routes = require('./server/routes.js');
+const routes = require('./routes.js');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 
 // add compression support
 app.use(compression());
 // fallthrough to static files
-app.use(express.static(__dirname + '/static'));
+console.log(path.join(__dirname, '../client'));
+app.use(express.static(path.join(__dirname, '../client')));
 // parse body parameters, use basic flat querystring
 app.use(bodyParser.urlencoded({ extended: false }));
 
