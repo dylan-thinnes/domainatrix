@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 export default class Item extends React.Component {
     constructor () {
         super();
@@ -32,7 +33,7 @@ export default class Item extends React.Component {
     render () {
         console.log("rendering element again", this.props);
         return (
-        <span className="item"><br/>{ this.parseHttp() } { this.parseDns() } { this.parsePing() } { this.props.name }</span>
+        <Link to={ "/domain/" + this.props.name } className="item"><br/>{ this.parseHttp() } { this.parseDns() } { this.parsePing() } { this.props.name }</Link>
         );
     }
 }
