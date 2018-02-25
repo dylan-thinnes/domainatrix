@@ -6,3 +6,4 @@ package-lock.json
 *.db
 backups/
 *.sass-cache
+*.hot-update.*
