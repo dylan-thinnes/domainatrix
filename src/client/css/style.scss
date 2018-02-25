@@ -1,3 +1,30 @@
+@import "bootstrap";
+
+$yellow : #CDDC39;
+$green  : #4CAf50;
+$blue   : #03A9F4;
+$red    : #FF5722;
+
+$pending : $yellow;
+$error   : $red;
+$correct : $green;
+$neutral : $blue;
+
+.yellow { background-color: $yellow; }
+.green  { background-color: $green; }
+.blue   { background-color: $blue; }
+.red    { background-color: $red; }
+
+html { overflow: hidden; }
+body {
+    font-family: monospace;
+    width: 100vw;
+    height: 100vh;
+    .item {
+        white-space: pre;
+    }
+}
+/*
 html {
 	overflow: hidden;
 }
@@ -134,3 +161,4 @@ body {
         justify-content: space-between;
     }
 }
+*/

@@ -1,8 +1,10 @@
 var debug = process.env.NODE_ENV !== "production";
+if (!debug) console.log("production mode enabled.");
 var webpack = require("webpack");
 var nodeExternals = require("webpack-node-externals");
 var fileLoader = require("file-loader");
 var path = require("path");
+var UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 defaultConfig = {
     devtool: debug ? "inline-sourcemap" : false,
@@ -10,7 +12,7 @@ defaultConfig = {
 clientConfig = Object.assign({}, defaultConfig, {
     context: path.join(__dirname, "src/client"),
     target: "web",
-    entry: ["./js/main.js", "./js/preload.js"],
+    entry: ["./main.js", "./preload.js"],
     output: {
         filename: "[name].js",
         path: path.join(__dirname, "dist/client")
@@ -42,21 +44,28 @@ clientConfig = Object.assign({}, defaultConfig, {
                 ]
             }
         ]
-    }
+    },
+    plugins: debug ? [] : [
+        new UglifyJsPlugin()
+    ]
 });
 oldClientConfig = Object.assign({}, defaultConfig, {
     context: path.join(__dirname, "src/client/oldInterface"),
     target: "web",
     entry: "./pack.js",
     output: {
-        filename: "script.js",
+        filename: "./_pack-output.js",
         path: path.join(__dirname, "dist/client/old")
     },
     module: { rules: [ {
-        test: /.(css|html)$/,
+        test: /.(css|html|js)$/,
+        exclude: /pack.js$/,
         loader: "file-loader",
         options: { name: "[name].[ext]" }
-    } ] }
+    } ] },
+    plugins: debug ? [] : [
+        new UglifyJsPlugin()
+    ]
 });
 serverConfig = Object.assign({}, defaultConfig, {
     context: path.join(__dirname, "src"),
@@ -71,6 +80,14 @@ serverConfig = Object.assign({}, defaultConfig, {
       __dirname: false,
       __filename: false,
     },
+    module: { rules: [ {
+        test: /.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+        query: {
+            presets: ["env"]
+        }
+    } ] },
     externals: [nodeExternals()]
 });
 module.exports = [

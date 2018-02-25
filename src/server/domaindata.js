@@ -108,7 +108,6 @@ DomainData.prototype.addDomainCandidate = async function (name, data) {
         await candidate.dns.update();
         if (candidate.dns.state === RemoteProperty.DOES_NOT_EXIST) {
             candidate.delete();
-            delete candidate;
             delete this.domains[name];
             return { "name": name, "state": 2};
         }
