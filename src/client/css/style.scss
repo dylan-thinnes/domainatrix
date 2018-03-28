@@ -1,4 +1,4 @@
-@import "bootstrap";
+@import "~bootstrap/scss/bootstrap";
 
 $yellow : #CDDC39;
 $green  : #4CAf50;
@@ -17,12 +17,36 @@ $neutral : $blue;
 
 html { overflow: hidden; }
 body {
-    font-family: monospace;
+    font-family: monospace !important;
+    * {
+        font-family: inherit !important;
+    }
     width: 100vw;
     height: 100vh;
-    .item {
-        white-space: pre;
+    .page {
+        width: 100vw;
+        height: 100vh;
     }
+    #main {
+        height: 0px;
+        flex: 1 1 auto;
+    }
+    .list {
+        overflow: scroll;
+        width: 100%;
+    }
+    .list.domains {
+        flex: 1 1 auto;
+    }
+    .item .stat {
+        width: 50pt !important;
+        flex: 0 0 auto;
+    }
+    .no-outline .stat {
+        outline: 0 !important;
+        box-shadow: none !important;
+    }
+    .faq { width: 76px; }
 }
 /*
 html {

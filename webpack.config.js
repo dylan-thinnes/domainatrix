@@ -37,12 +37,16 @@ clientConfig = Object.assign({}, defaultConfig, {
             },
             {
                 test: /\.html$/,
+                use: "html-loader"
+            },
+            {
+                test: /index\.html$/,
                 use: [
                     { loader: "file-loader", options: { name: "[name].[ext]" } },
                     "extract-loader",
                     "html-loader"
                 ]
-            }
+            },
         ]
     },
     plugins: debug ? [] : [
